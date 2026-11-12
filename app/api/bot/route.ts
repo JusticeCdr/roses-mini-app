@@ -6,6 +6,11 @@ import { ORDER_STATUS, type Customer, type Order, type OrderStatus } from "@/lib
 import { reverseGeocode, validCoords } from "@/lib/geo";
 import { asLang, translate } from "@/lib/i18n";
 
+const LOCATION_KEYBOARD_RU = {
+  keyboard: [[{ text: "📍 Отправить местоположение", request_location: true }]],
+  resize_keyboard: true,
+  is_persistent: false,
+};
 const LOCATION_KEYBOARD = {
   keyboard: [[{ text: "📍 Joylashuvimni yuborish", request_location: true }]],
   resize_keyboard: true,
@@ -17,7 +22,7 @@ export const dynamic = "force-dynamic";
 type Update = {
   message?: {
     chat: { id: number };
-    from?: { id: number; first_name?: string; last_name?: string; username?: string };
+    from?: { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string };
     text?: string;
     location?: { latitude: number; longitude: number };
   };
@@ -89,16 +94,23 @@ async function onMessage(req: Request, m: NonNullable<Update["message"]>) {
     return;
   }
 
-  await tg("sendMessage", {
-    chat_id,
-    text: settings.welcome_text,
-    reply_markup: { inline_keyboard: [[{ text: "🌹 Do‘konni ochish", web_app: { url: appUrl(req) } }]] },
-  });
+  const saved = await store().get<Customer>("customers", String(m.from?.id ?? chat_id)).catch(() => null);
+  const ru = (saved?.lang ?? (m.from?.language_code === "ru" ? "ru" : "uz")) === "ru";
+  const caption = (ru ? settings.welcome_text_ru || settings.welcome_text : settings.welcome_text).slice(0, 1000);
+  const openBtn = { inline_keyboard: [[{ text: ru ? "🌹 Открыть магазин" : "🌹 Do‘konni ochish", web_app: { url: appUrl(req) } }]] };
+  const photo = settings.welcome_image || `${appUrl(req)}/roses-welcome.jpg`;
+  try {
+    await tg("sendPhoto", { chat_id, photo, caption, reply_markup: openBtn });
+  } catch {
+    await tg("sendMessage", { chat_id, text: caption, reply_markup: openBtn });
+  }
   if (text.startsWith("/start")) {
     await tg("sendMessage", {
       chat_id,
-      text: "Yetkazib berish manzilini tez saqlash uchun pastdagi “📍 Joylashuvimni yuborish” tugmasini bosing.",
-      reply_markup: LOCATION_KEYBOARD,
+      text: ru
+        ? "Чтобы быстро сохранить адрес доставки, нажмите кнопку «📍 Отправить местоположение» ниже."
+        : "Yetkazib berish manzilini tez saqlash uchun pastdagi “📍 Joylashuvimni yuborish” tugmasini bosing.",
+      reply_markup: ru ? LOCATION_KEYBOARD_RU : LOCATION_KEYBOARD,
     });
   }
 }

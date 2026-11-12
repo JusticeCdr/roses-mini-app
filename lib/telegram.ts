@@ -145,8 +145,26 @@ export async function notifyCustomer(o: Order, text?: string) {
   }
 }
 
+/** Multipart call (file uploads). */
+export async function tgUpload<T = unknown>(method: string, form: FormData): Promise<T> {
+  const r = await fetch(`https://api.telegram.org/bot${token()}/${method}`, { method: "POST", body: form, cache: "no-store" });
+  const j = (await r.json()) as { ok: boolean; result: T; description?: string };
+  if (!j.ok) throw new Error(`Telegram: ${j.description ?? r.status}`);
+  return j.result;
+}
+
+/** Sets the bot's profile photo (Bot API setMyProfilePhoto). */
+export async function setBotAvatar(imageUrl: string): Promise<boolean> {
+  const img = await fetch(imageUrl, { cache: "no-store" });
+  if (!img.ok) throw new Error("Avatar rasmi topilmadi");
+  const form = new FormData();
+  form.append("photo", JSON.stringify({ type: "static", photo: "attach://avatar" }));
+  form.append("avatar", new Blob([await img.arrayBuffer()], { type: "image/jpeg" }), "avatar.jpg");
+  return tgUpload<boolean>("setMyProfilePhoto", form);
+}
+
 /** Webhook + menu button + commands. Used by the admin button and the one-time setup link. */
-export async function setupBot(url: string): Promise<{ bot: string; url: string }> {
+export async function setupBot(url: string): Promise<{ bot: string; url: string; avatar: string }> {
   if (!url.startsWith("https://")) throw new Error("Bot faqat https manzil bilan ishlaydi — avval Vercel’ga yuklang");
   await tg("setWebhook", {
     url: `${url}/api/bot`, secret_token: webhookSecret(),
@@ -161,6 +179,8 @@ export async function setupBot(url: string): Promise<{ bot: string; url: string 
   await tg("setMyDescription", { description: "🌹 Roses — buketlar, atirgullar va qutidagi gullar. Telegram ichida tanlang va buyurtma bering." }).catch(() => {});
   await tg("setMyDescription", { description: "🌹 Roses — букеты, розы и цветы в коробке. Выбирайте и заказывайте прямо в Telegram.", language_code: "ru" }).catch(() => {});
   await tg("setMyShortDescription", { short_description: "Roses — gul do‘koni 🌹" }).catch(() => {});
+  let avatar = "ok";
+  try { await setBotAvatar(`${url}/roses-avatar.jpg`); } catch (e) { avatar = (e as Error).message; }
   const me = await tg<{ username: string }>("getMe", {});
-  return { bot: me.username, url };
+  return { bot: me.username, url, avatar };
 }

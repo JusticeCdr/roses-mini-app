@@ -121,6 +121,8 @@ export type Settings = {
   min_order: number;
   notify_chat_ids: string;
   welcome_text: string;
+  welcome_text_ru: string;
+  welcome_image: string;
   card_number: string;
   card_holder: string;
   card_bank: string;

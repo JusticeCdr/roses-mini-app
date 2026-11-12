@@ -435,7 +435,9 @@ function SettingsView({ session, onSeed }: { session: Session; onSeed(): void })
     { key: "card_holder", label: "Karta egasi", type: "text", placeholder: "ALIYEV ALI" },
     { key: "card_bank", label: "Karta turi / bank", type: "text", placeholder: "Uzcard · Kapitalbank" },
     { key: "notify_chat_ids", label: "Buyurtmalar keladigan chat ID", type: "text", hint: "Botga /id yozing — u sizning ID’ingizni aytadi. Bir nechta bo‘lsa, vergul bilan." },
-    { key: "welcome_text", label: "Botdagi /start xabari", type: "textarea" },
+    { key: "welcome_image", label: "/start xabaridagi rasm", type: "image", hint: "Bo‘sh qolsa — Roses logotipli rasm chiqadi" },
+    { key: "welcome_text", label: "Botdagi /start xabari (o‘zbekcha)", type: "textarea" },
+    { key: "welcome_text_ru", label: "Botdagi /start xabari (ruscha)", type: "textarea" },
   ];
 
   const run = async (key: string, fn: () => Promise<string>) => {

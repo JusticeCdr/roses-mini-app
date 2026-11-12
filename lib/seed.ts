@@ -14,6 +14,9 @@ export const DEFAULT_SETTINGS: Settings = {
   card_number: "",
   card_holder: "",
   card_bank: "",
+  welcome_image: "",
+  welcome_text_ru:
+    "Здравствуйте! Добро пожаловать в цветочный магазин Roses 🌹\nБукеты, цветы в коробке и подарки — выбирайте и заказывайте прямо здесь.",
   welcome_text:
     "Assalomu alaykum! Roses gul do‘koniga xush kelibsiz 🌹\nBuketlar, qutidagi gullar va sovg‘alarni shu yerning o‘zida tanlab, buyurtma berishingiz mumkin.",
 };
