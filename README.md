@@ -17,6 +17,12 @@ Next.js 16 + Tailwind 4 + Supabase. Mijoz qismi (`/`), admin panel (`/admin`) va
 - holat o‘zgarganda mijozga bot avtomatik xabar yuboradi
 - `/admin`: mahsulotlar (rasm yuklash, narx, eski narx, aksiya, sotuvda bor/yo‘q), kategoriyalar, bannerlar, promo-kodlar (foiz yoki summa, muddat, limit, bosh sahifada ko‘rsatish), buyurtmalar, mijozlar, sozlamalar
 
+## Hozirgi holat
+- GitHub: `JusticeCdr/roses-mini-app` (private) — `main` ga har bir push Vercel’da avtomatik yangilanadi.
+- Vercel loyihasi: `roses-shop`.
+- Supabase: `roses_*` jadvallari va `roses` rasm bucket’i yaratilgan, namuna gullar qo‘shilgan.
+- Qolgan 2 qadam: Vercel’ga `BOT_TOKEN` va `SUPABASE_SERVICE_ROLE_KEY` qo‘shish (pastda).
+
 ## Ishga tushirish (5 qadam)
 
 ### 1. Bot yaratish
