@@ -74,6 +74,7 @@ type Ctx = {
   promo: string;
   setPromo(code: string): void;
   api<T = unknown>(path: string, init?: RequestInit): Promise<T>;
+  apiForm<T = unknown>(path: string, form: FormData): Promise<T>;
   lang: Lang;
   setLang(l: Lang): void;
   t(key: TKey, vars?: Record<string, string | number>): string;
@@ -124,6 +125,13 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       },
       cache: "no-store",
     });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error((data as { error?: string }).error ?? translate(langRef.current, "e_generic"));
+    return data as T;
+  }, []);
+
+  const apiForm = useCallback(async <T,>(path: string, form: FormData): Promise<T> => {
+    const res = await fetch(path, { method: "POST", body: form, headers: { "x-telegram-init-data": initData.current, "x-lang": langRef.current }, cache: "no-store" });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error((data as { error?: string }).error ?? translate(langRef.current, "e_generic"));
     return data as T;
@@ -232,6 +240,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       writeLS(PROMO_KEY, code);
     },
     api,
+    apiForm,
     haptic,
     lang,
     setLang: (l) => {

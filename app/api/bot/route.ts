@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { store } from "@/lib/store";
 import { getSettings, notifyIds } from "@/lib/data";
-import { appUrl, notifyCustomer, orderText, statusKeyboard, tg, webhookSecret } from "@/lib/telegram";
+import { appUrl, notifyCustomer, orderText, sendReceiptToOwners, statusKeyboard, tg, webhookSecret } from "@/lib/telegram";
 import { ORDER_STATUS, type Customer, type Order, type OrderStatus } from "@/lib/types";
 import { reverseGeocode, validCoords } from "@/lib/geo";
 import { asLang, translate } from "@/lib/i18n";
@@ -25,6 +25,8 @@ type Update = {
     from?: { id: number; first_name?: string; last_name?: string; username?: string; language_code?: string };
     text?: string;
     location?: { latitude: number; longitude: number };
+    photo?: { file_id: string; width: number; height: number }[];
+    document?: { file_id: string; mime_type?: string };
   };
   callback_query?: {
     id: string; from: { id: number }; data?: string;
@@ -54,6 +56,25 @@ async function onMessage(req: Request, m: NonNullable<Update["message"]>) {
   const chat_id = m.chat.id;
   const text = (m.text ?? "").trim();
   const settings = await getSettings();
+
+  // A photo (or image file) sent to the bot is treated as a payment receipt for the latest order.
+  const photoId = m.photo?.length ? m.photo[m.photo.length - 1].file_id : m.document?.mime_type?.startsWith("image/") ? m.document.file_id : null;
+  if (photoId) {
+    const owners = notifyIds(settings);
+    if (owners.includes(String(chat_id))) return; // owners' own photos are not receipts
+    const uid = String(m.from?.id ?? chat_id);
+    const orders = await store().list<Order>("orders", { where: { customer_id: uid }, order: [["created_at", "desc"]], limit: 5 });
+    const order = orders.find((o) => o.status !== "cancelled" && o.status !== "done") ?? orders[0];
+    const lang = asLang(order?.lang ?? (m.from?.language_code === "ru" ? "ru" : "uz"));
+    if (!order) {
+      await tg("sendMessage", { chat_id, text: translate(lang, "b_receiptNoOrder") });
+      return;
+    }
+    const updated = await store().update<Order>("orders", order.id, { receipt_url: `tg:${photoId}` });
+    await sendReceiptToOwners(updated, photoId, owners);
+    await tg("sendMessage", { chat_id, text: translate(lang, "b_receiptOk", { n: order.number }) });
+    return;
+  }
 
   if (m.location) {
     const c = validCoords(m.location.latitude, m.location.longitude);

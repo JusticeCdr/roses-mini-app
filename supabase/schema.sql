@@ -125,3 +125,5 @@ alter table roses_banners add column if not exists title_ru text not null defaul
 alter table roses_promos add column if not exists title_ru text not null default '';
 alter table roses_customers add column if not exists lang text not null default 'uz';
 alter table roses_orders add column if not exists lang text not null default 'uz', add column if not exists card_text text not null default '';
+
+alter table roses_orders add column if not exists receipt_url text;

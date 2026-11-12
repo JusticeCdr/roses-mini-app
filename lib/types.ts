@@ -104,6 +104,7 @@ export type Order = {
   delivery_time: string;
   comment: string;
   card_text?: string;
+  receipt_url?: string;
   lang?: string;
   payment: string;
   status: OrderStatus;

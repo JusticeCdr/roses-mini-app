@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { clsx } from "clsx";
 import { ChevronDown, Package } from "lucide-react";
 import { useShop } from "@/components/shop-provider";
+import { ReceiptButton } from "@/components/receipt-button";
 import { Button, Empty, PageHeader } from "@/components/ui";
 import { dateTimeIn } from "@/lib/i18n";
 import type { Order, OrderStatus } from "@/lib/types";
@@ -74,6 +75,7 @@ export default function OrdersPage() {
                     {o.discount ? <div className="flex justify-between text-muted"><span>{t("discount")}</span><span>−{money(o.discount)}</span></div> : null}
                     <div className="flex justify-between text-muted"><span>{t("delivery")}</span><span>{o.delivery_fee ? money(o.delivery_fee) : t("free")}</span></div>
                     <p className="pt-2 text-muted">{o.address} · {o.delivery_time}</p>
+                    {o.payment.startsWith("Karta") && o.status !== "cancelled" ? <div className="pt-2"><ReceiptButton orderId={o.id} sent={Boolean(o.receipt_url)} /></div> : null}
                   </div>
                 ) : null}
               </li>

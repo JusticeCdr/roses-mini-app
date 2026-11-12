@@ -8,6 +8,7 @@ import { Banknote, Check, CheckCircle2, Copy, CreditCard, Phone, Send } from "lu
 import { useBackButton, useShop } from "@/components/shop-provider";
 import { formatPhone, useContactRequest } from "@/components/customer-form";
 import { LocateButton } from "@/components/locate";
+import { ReceiptButton } from "@/components/receipt-button";
 import { BottomBar, Button, Field, PageHeader } from "@/components/ui";
 import { Summary } from "@/components/summary";
 import { useQuote } from "@/components/use-quote";
@@ -121,6 +122,7 @@ export default function CheckoutPage() {
             </button>
           </div>
         ) : null}
+        {payment === "card" && card ? <div className="mt-3 w-full max-w-xs text-left"><ReceiptButton orderId={done.id} /></div> : null}
         <div className="mt-8 flex w-full max-w-xs flex-col gap-2">
           <Link href="/orders"><Button className="w-full">{t("myOrders")}</Button></Link>
           <Link href="/"><Button variant="ghost" className="w-full">{t("toHome")}</Button></Link>

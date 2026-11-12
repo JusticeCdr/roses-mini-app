@@ -168,6 +168,13 @@ const uz = {
   b_done: "🎉 Buyurtmangiz #{n} yetkazildi. Xaridingiz uchun rahmat!",
   b_cancelled: "Buyurtmangiz #{n} bekor qilindi. Savollar bo‘lsa, shu yerga yozing.",
   b_pay: "To‘lov",
+  sendReceipt: "Chekni yuborish",
+  receiptSending: "Yuborilmoqda…",
+  receiptSent: "Chek yuborildi",
+  receiptHint: "To‘lov chekining skrinshotini tanlang yoki shunchaki botga rasm qilib yuboring.",
+  receiptAgain: "Boshqa chek yuborish",
+  b_receiptOk: "🧾 Chek qabul qilindi (buyurtma #{n}). Rahmat! Tez orada tasdiqlaymiz.",
+  b_receiptNoOrder: "Chekni qaysi buyurtmaga biriktirishni topa olmadik. Avval do‘kondan buyurtma bering.",
   b_total: "Jami",
 };
 
@@ -322,6 +329,13 @@ const ru: Dict = {
   b_done: "🎉 Ваш заказ #{n} доставлен. Спасибо за покупку!",
   b_cancelled: "Ваш заказ #{n} отменён. Если есть вопросы — напишите сюда.",
   b_pay: "Оплата",
+  sendReceipt: "Отправить чек",
+  receiptSending: "Отправляем…",
+  receiptSent: "Чек отправлен",
+  receiptHint: "Выберите скриншот чека об оплате или просто отправьте фото в бот.",
+  receiptAgain: "Отправить другой чек",
+  b_receiptOk: "🧾 Чек получен (заказ #{n}). Спасибо! Скоро подтвердим.",
+  b_receiptNoOrder: "Не нашли заказ для этого чека. Сначала оформите заказ в магазине.",
   b_total: "Итого",
 };
 

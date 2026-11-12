@@ -335,6 +335,7 @@ function Orders() {
               <button type="button" className="press w-full p-4 text-left" onClick={() => setOpen(open === o.id ? null : o.id)} aria-expanded={open === o.id}>
                 <div className="flex items-center gap-3">
                   <b className="text-[17px]">#{o.number}</b>
+                  {o.receipt_url ? <span title="Chek bor">🧾</span> : null}
                   <span className={clsx("rounded-full px-2.5 py-0.5 text-[13px] font-bold", STATUS_TONE[o.status])}>{ORDER_STATUS[o.status]}</span>
                   <span className="ml-auto font-bold tabular-nums">{money(o.total)}</span>
                 </div>
@@ -359,6 +360,11 @@ function Orders() {
                     <p><span className="text-muted">Vaqt:</span> {o.delivery_time}</p>
                     <p><span className="text-muted">To‘lov:</span> {o.payment}</p>
                     {o.comment ? <p><span className="text-muted">Izoh:</span> {o.comment}</p> : null}
+                    {o.receipt_url ? (
+                      o.receipt_url.startsWith("tg:")
+                        ? <p className="font-semibold text-accent">🧾 Chek botga yuborilgan (Telegram chatingizda)</p>
+                        : <a href={o.receipt_url} target="_blank" rel="noreferrer" className="block"><img src={o.receipt_url} alt="To‘lov cheki" className="mt-1 max-h-56 rounded-xl border border-line" /></a>
+                    ) : o.payment.startsWith("Karta") ? <p className="text-[13px] text-warn">Chek hali yuborilmagan</p> : null}
                     {o.card_text ? <p><span className="text-muted">Otkritka:</span> “{o.card_text}”</p> : null}
                     {o.lang === "ru" ? <p className="text-[13px] text-muted">Mijoz tili: ruscha 🇷🇺</p> : null}
                     <p className="flex flex-wrap gap-3 pt-1">

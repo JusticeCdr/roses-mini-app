@@ -184,3 +184,23 @@ export async function setupBot(url: string): Promise<{ bot: string; url: string;
   const me = await tg<{ username: string }>("getMe", {});
   return { bot: me.username, url, avatar };
 }
+
+/** Sends a payment receipt photo (URL or Telegram file_id) to the shop owners. */
+export async function sendReceiptToOwners(o: Order, photo: string, chatIds: string[]): Promise<number> {
+  let sent = 0;
+  const caption = [
+    `🧾 <b>To‘lov cheki · buyurtma #${o.number}</b>`,
+    `Summa: <b>${money(o.total)}</b>`,
+    `👤 ${esc(o.name)} · ${esc(o.phone)}`,
+    `💳 ${esc(o.payment)}`,
+  ].join("\n");
+  for (const chat_id of chatIds) {
+    try {
+      await tg("sendPhoto", { chat_id, photo, caption, parse_mode: "HTML", reply_markup: statusKeyboard(o) });
+      sent++;
+    } catch (e) {
+      console.error("receipt to owner failed", chat_id, e);
+    }
+  }
+  return sent;
+}
