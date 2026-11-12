@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useShop } from "./shop-provider";
-import { RoseMark } from "./logo";
 
 /**
  * Opening animation. A real rose photograph slowly zooms in the background while
@@ -169,6 +168,7 @@ export function PetalSplash() {
     const img = new Image();
     img.onload = () => setPhotoReady(true);
     img.src = HERO;
+    new Image().src = "/roses-emblem.webp";
   }, []);
 
   useEffect(() => {
@@ -333,9 +333,13 @@ export function PetalSplash() {
       {!reduced ? <canvas ref={canvasRef} className="pointer-events-none absolute inset-0" aria-hidden /> : null}
       <div className={`pointer-events-none absolute inset-0 grid place-items-center ${leaving ? "splash-logo-out" : ""}`}>
         <div className="flex flex-col items-center" style={{ transform: "translateY(-6vh)" }}>
-          <div className="splash-mark rounded-full p-1.5 shadow-[0_20px_50px_-20px_rgb(30_61_46/0.8)]" style={{ background: "rgb(255 255 255 / 0.6)", backdropFilter: "blur(10px)" }}>
-            <RoseMark size={76} />
-          </div>
+          <img
+            src="/roses-emblem.webp"
+            alt=""
+            width={150}
+            height={150}
+            className="splash-mark h-[150px] w-[150px] rounded-full shadow-[0_28px_60px_-24px_rgb(30_61_46/0.75)]"
+          />
           <p className="splash-word mt-5 font-display text-[58px] leading-none font-bold tracking-tight text-ink">Roses</p>
           <p className="splash-tag mt-2 text-[12px] font-bold tracking-[0.34em] text-accent uppercase">{t("tagline")}</p>
         </div>
