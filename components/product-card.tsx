@@ -9,6 +9,7 @@ import { Minus, Plus } from "lucide-react";
 import { discountPercent, money } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { useShop } from "./shop-provider";
+import { flyToCart } from "@/lib/fly-to-cart";
 
 export function ProductCard({ p, className, eager, size = "md" }: { p: Product; className?: string; eager?: boolean; size?: "md" | "lg" }) {
   const { qtyOf, add, setQty } = useShop();
@@ -47,7 +48,7 @@ export function ProductCard({ p, className, eager, size = "md" }: { p: Product; 
           ) : (
             <button
               type="button"
-              onClick={() => add(p.id)}
+              onClick={(e) => { flyToCart(e.currentTarget, p.images[0]); add(p.id); }}
               aria-label={`${p.name} — savatchaga qo‘shish`}
               className="glass-strong press absolute right-2 bottom-2 grid h-11 w-11 place-items-center rounded-full text-accent"
             >

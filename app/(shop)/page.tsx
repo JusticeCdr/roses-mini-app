@@ -10,6 +10,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Button } from "@/components/ui";
 import { RoseMark } from "@/components/logo";
 import { money } from "@/lib/format";
+import { flyToCart } from "@/lib/fly-to-cart";
 import type { Banner, Category, Product, PublicPromo } from "@/lib/types";
 
 export default function HomePage() {
@@ -204,7 +205,7 @@ function Featured({ p }: { p: Product }) {
         {p.description ? <p className="mt-2 line-clamp-2 text-[15px] text-ink/75">{p.description}</p> : null}
         <div className="mt-4 flex items-center justify-between gap-3">
           <span className="text-[18px] font-bold">{money(p.price)}</span>
-          <Button className="!min-h-12 !rounded-full !px-5 !text-[15px]" onClick={() => (inCart ? router.push("/cart") : add(p.id))}>
+          <Button className="!min-h-12 !rounded-full !px-5 !text-[15px]" onClick={(e) => { if (inCart) router.push("/cart"); else { flyToCart(e.currentTarget, p.images[0]); add(p.id); } }}>
             {inCart ? <>Savatchada <ArrowRight size={17} /></> : "Savatchaga"}
           </Button>
         </div>

@@ -7,6 +7,7 @@ import { clsx } from "clsx";
 import { CheckCircle2, Phone, Send } from "lucide-react";
 import { useBackButton, useShop } from "@/components/shop-provider";
 import { formatPhone, useContactRequest } from "@/components/customer-form";
+import { LocateButton } from "@/components/locate";
 import { BottomBar, Button, Field, PageHeader } from "@/components/ui";
 import { Summary } from "@/components/summary";
 import { useQuote } from "@/components/use-quote";
@@ -20,11 +21,12 @@ const PAYMENTS = ["Naqd pul", "Karta orqali (kuryerga)", "Click / Payme"];
 export default function CheckoutPage() {
   useBackButton("/cart");
   const router = useRouter();
-  const { cart, customer, me, api, promo, setPromo, clearCart, haptic, inTelegram, setCustomer } = useShop();
+  const { cart, cartLoaded, customer, me, api, promo, setPromo, clearCart, haptic, inTelegram, setCustomer } = useShop();
   const { quote, loading } = useQuote();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [day, setDay] = useState<(typeof DAYS)[number]>("Imkon qadar tez");
   const [slot, setSlot] = useState(SLOTS[1]);
   const [payment, setPayment] = useState(PAYMENTS[0]);
@@ -38,11 +40,12 @@ export default function CheckoutPage() {
     setName((v) => v || customer?.name || me?.name || "");
     setPhone((v) => v || customer?.phone || "");
     setAddress((v) => v || customer?.address || "");
+    setCoords((v) => v ?? (customer?.lat != null && customer?.lng != null ? { lat: customer.lat, lng: customer.lng } : null));
   }, [customer, me]);
 
   useEffect(() => {
-    if (!cart.length && !done) router.replace("/cart");
-  }, [cart.length, done, router]);
+    if (cartLoaded && !cart.length && !done) router.replace("/cart");
+  }, [cartLoaded, cart.length, done, router]);
 
   async function submit() {
     setError(null);
@@ -56,12 +59,12 @@ export default function CheckoutPage() {
       const r = await api<{ order: Order }>("/api/orders", {
         method: "POST",
         body: JSON.stringify({
-          items: cart, promo: quote?.promo ? promo : "", name, phone, address, comment, payment,
+          items: cart, promo: quote?.promo ? promo : "", name, phone, address, comment, payment, ...(coords ?? {}),
           delivery_time: day === "Imkon qadar tez" ? day : `${day}, ${slot}`,
         }),
       });
       haptic("success");
-      setCustomer({ ...(customer ?? { id: r.order.customer_id, first_name: "", last_name: "", username: "" }), name, phone, address });
+      setCustomer({ ...(customer ?? { id: r.order.customer_id, first_name: "", last_name: "", username: "" }), name, phone, address, lat: coords?.lat ?? customer?.lat, lng: coords?.lng ?? customer?.lng });
       setDone(r.order);
       clearCart();
       setPromo("");
@@ -117,7 +120,8 @@ export default function CheckoutPage() {
               ) : null}
             </div>
           </Field>
-          <Field label="Manzil" hint="Tuman, ko‘cha, uy, mo‘ljal">
+          <LocateButton coords={coords} onLocated={(l) => { setCoords({ lat: l.lat, lng: l.lng }); if (l.address) setAddress(l.address); }} />
+          <Field label="Manzil" hint="Uy, xonadon, mo‘ljal">
             <textarea className="field min-h-[88px] resize-none" rows={3} value={address} onChange={(e) => setAddress(e.target.value)} />
           </Field>
         </section>

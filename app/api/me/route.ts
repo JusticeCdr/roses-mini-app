@@ -3,6 +3,7 @@ import { store } from "@/lib/store";
 import { requestUser } from "@/lib/telegram";
 import { errorJson } from "@/lib/admin-auth";
 import type { Customer } from "@/lib/types";
+import { validCoords } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,9 @@ export async function PUT(req: Request) {
     if (!name || phone.replace(/\D/g, "").length < 9) {
       return NextResponse.json({ error: "Ism va telefon raqamini to‘g‘ri kiriting" }, { status: 400 });
     }
+    const coords = validCoords(b.lat, b.lng);
     const customer = await store().upsert<Customer>("customers", {
+      ...(coords ? coords : {}),
       id: String(u.id),
       first_name: u.first_name ?? "",
       last_name: u.last_name ?? "",

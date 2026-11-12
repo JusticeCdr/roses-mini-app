@@ -172,7 +172,7 @@ function ImagesInput({ def, multiple, value, onChange }: { def: FieldDef; multip
         </button>
       </div>
       {err ? <p className="mt-2 text-[14px] font-semibold text-accent">{err}</p> : null}
-      {def.hint ? <p className="mt-1.5 text-[13px] text-muted">{def.hint}</p> : null}
+      <p className="mt-1.5 text-[13px] text-muted">{def.hint ? `${def.hint} ` : ""}Rasmlar avtomatik WebP formatiga o‘tkaziladi.</p>
     </div>
   );
 }

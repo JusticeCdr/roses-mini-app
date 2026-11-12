@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui";
 import { FieldInput, type FieldDef } from "./fields";
 
@@ -25,18 +25,35 @@ export function useRows<T extends Row>(entity: string) {
 }
 
 export function Resource<T extends Row>({
-  entity, title, fields, blank, renderRow, addLabel = "Qo‘shish", onChange,
+  entity, title, fields, blank, renderRow, addLabel = "Qo‘shish", onChange, searchText,
 }: {
   entity: string;
   title: string;
   fields: FieldDef[];
   blank: Partial<T>;
-  renderRow(r: T): React.ReactNode;
+  renderRow(r: T, patch: (p: Partial<T>) => void): React.ReactNode;
   addLabel?: string;
   onChange?(): void;
+  searchText?(r: T): string;
 }) {
-  const { rows, error, reload } = useRows<T>(entity);
+  const { rows, setRows, error, reload } = useRows<T>(entity);
   const [edit, setEdit] = useState<Partial<T> | null>(null);
+  const [q, setQ] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
+
+  const patch = (r: T) => async (p: Partial<T>) => {
+    setRows((rs) => rs?.map((x) => (x.id === r.id ? { ...x, ...p } : x)) ?? null);
+    try {
+      await adminApi(`/api/admin/${entity}/${r.id}`, { method: "PUT", body: JSON.stringify(p) });
+      setToast("Saqlandi");
+      onChange?.();
+    } catch (e) {
+      setToast((e as Error).message);
+      reload();
+    }
+    setTimeout(() => setToast(null), 1600);
+  };
+  const shown = (rows ?? []).filter((r) => !q.trim() || (searchText?.(r) ?? "").toLowerCase().includes(q.trim().toLowerCase()));
 
   return (
     <section>
@@ -44,6 +61,13 @@ export function Resource<T extends Row>({
         <h2 className="font-display text-[30px] leading-none font-semibold">{title}</h2>
         <Button onClick={() => setEdit({ ...blank })} className="!min-h-11 !rounded-full !px-4 !text-[15px]"><Plus size={18} /> {addLabel}</Button>
       </div>
+      {searchText && (rows?.length ?? 0) > 4 ? (
+        <label className="relative mb-3 block">
+          <span className="sr-only">Qidirish</span>
+          <Search size={17} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted" />
+          <input className="field !min-h-11 !rounded-full !py-2 pl-11" placeholder="Qidirish…" value={q} onChange={(e) => setQ(e.target.value)} />
+        </label>
+      ) : null}
       {error ? <p className="text-accent">{error}</p> : null}
       {!rows ? (
         <div className="space-y-2">{[0, 1, 2].map((i) => <div key={i} className="skeleton h-20 rounded-[18px]" />)}</div>
@@ -51,14 +75,15 @@ export function Resource<T extends Row>({
         <p className="rounded-[18px] bg-surface p-6 text-center text-muted">Hozircha bo‘sh. “{addLabel}” tugmasini bosing.</p>
       ) : (
         <ul className="grid gap-2 lg:grid-cols-2">
-          {rows.map((r) => (
-            <li key={r.id} className="flex items-center gap-3 rounded-[18px] bg-surface p-3">
-              <div className="min-w-0 flex-1">{renderRow(r)}</div>
+          {shown.map((r) => (
+            <li key={r.id} className="enter flex items-center gap-3 rounded-[18px] bg-surface p-3 shadow-soft">
+              <div className="min-w-0 flex-1">{renderRow(r, patch(r))}</div>
               <button type="button" onClick={() => setEdit(r)} aria-label="Tahrirlash" className="press grid h-11 w-11 shrink-0 place-items-center rounded-full bg-well"><Pencil size={17} /></button>
             </li>
           ))}
         </ul>
       )}
+      {toast ? <div role="status" className="fade-in fixed top-4 left-1/2 z-[60] -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-[14px] font-semibold text-white shadow-lg">{toast}</div> : null}
       {edit ? (
         <Editor
           entity={entity}

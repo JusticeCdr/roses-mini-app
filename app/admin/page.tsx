@@ -9,6 +9,7 @@ import { Button, Field } from "@/components/ui";
 import { adminApi, Resource, useRows } from "@/components/admin/resource";
 import { FieldInput, type FieldDef } from "@/components/admin/fields";
 import { dateTime, money } from "@/lib/format";
+import { mapLinks } from "@/lib/geo";
 import { ORDER_STATUS, type Banner, type Category, type Customer, type Order, type OrderStatus, type Product, type Promo, type Settings } from "@/lib/types";
 
 type Session = { authed: boolean; configured: boolean; storage: "supabase" | "local"; bot: boolean };
@@ -143,7 +144,8 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
               { key: "in_stock", label: "Sotuvda bor", type: "bool" },
               { key: "sort", label: "Tartib raqami", type: "number", hint: "Kichik raqam — yuqorida" },
             ]}
-            renderRow={(p) => (
+            searchText={(p) => `${p.name} ${p.description} ${catName(p.category_id)}`}
+            renderRow={(p, patch) => (
               <div className="flex items-center gap-3">
                 <span className="block h-16 w-14 shrink-0 overflow-hidden rounded-xl bg-well">{p.images[0] ? <img src={p.images[0]} alt="" className="h-full w-full object-cover" /> : null}</span>
                 <span className="min-w-0">
@@ -155,6 +157,11 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
                     {!p.in_stock ? <Badge tone="muted">Tugagan</Badge> : null}
                   </span>
                 </span>
+                <label className="ml-auto flex shrink-0 cursor-pointer flex-col items-center gap-1 text-[11px] font-semibold text-muted" onClick={(e) => e.stopPropagation()}>
+                  <input type="checkbox" className="peer sr-only" checked={p.in_stock} onChange={(e) => patch({ in_stock: e.target.checked })} aria-label="Sotuvda bor" />
+                  <span aria-hidden className="relative h-7 w-12 rounded-full bg-line transition-colors peer-checked:bg-ok after:absolute after:top-0.5 after:left-0.5 after:h-6 after:w-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5" />
+                  Sotuvda
+                </label>
               </div>
             )}
           />
@@ -348,6 +355,7 @@ function Orders() {
                     <p className="flex flex-wrap gap-3 pt-1">
                       <a className="font-semibold text-accent" href={`tel:${o.phone.replace(/[^\d+]/g, "")}`}>Qo‘ng‘iroq qilish</a>
                       <a className="font-semibold text-accent" href={o.tg_username ? `https://t.me/${o.tg_username}` : `tg://user?id=${o.customer_id}`} target="_blank">Telegramda yozish</a>
+                      {o.lat != null && o.lng != null ? <a className="font-semibold text-accent" href={mapLinks(o.lat, o.lng).yandex} target="_blank" rel="noreferrer">📍 Xaritada</a> : null}
                     </p>
                     <label className="block pt-2">
                       <span className="mb-1.5 block text-[13px] font-semibold text-muted">Holatini o‘zgartirish (mijozga xabar boradi)</span>
@@ -386,6 +394,7 @@ function Customers() {
           <li key={c.id} className="rounded-[18px] bg-surface p-4">
             <p className="font-semibold">{c.name} {c.username ? <span className="font-normal text-muted">@{c.username}</span> : null}</p>
             <p className="text-[14px] text-muted">{c.phone}</p>
+            {c.lat != null && c.lng != null ? <a className="text-[14px] font-semibold text-accent" href={mapLinks(c.lat, c.lng).yandex} target="_blank" rel="noreferrer">📍 Xaritada</a> : null}
             {c.address ? <p className="mt-1 text-[14px]">{c.address}</p> : null}
           </li>
         ))}

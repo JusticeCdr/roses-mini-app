@@ -1,6 +1,8 @@
 import { ShopProvider } from "@/components/shop-provider";
 import { TabBar } from "@/components/ui";
 import { WelcomeSheet } from "@/components/welcome-sheet";
+import { PetalSplash } from "@/components/petal-splash";
+import { TelegramMenus } from "@/components/telegram-menus";
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +12,8 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       </main>
       <TabBar />
       <WelcomeSheet />
+      <TelegramMenus />
+      <PetalSplash />
     </ShopProvider>
   );
 }

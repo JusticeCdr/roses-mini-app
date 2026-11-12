@@ -11,11 +11,12 @@ import { useQuote } from "@/components/use-quote";
 import { money } from "@/lib/format";
 
 export default function CartPage() {
-  const { cart, products, setQty, clearCart, promo, setPromo, catalog } = useShop();
+  const { cart, cartLoaded, products, setQty, clearCart, promo, setPromo, catalog } = useShop();
   const { quote, loading } = useQuote();
   const router = useRouter();
   const [code, setCode] = useState("");
 
+  if (!cartLoaded) return <PageHeader title="Savatcha" />;
   if (!cart.length) {
     return (
       <div>

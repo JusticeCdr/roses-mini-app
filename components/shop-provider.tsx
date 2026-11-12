@@ -5,6 +5,16 @@ import { useRouter } from "next/navigation";
 import type { Catalog, Customer, Product } from "@/lib/types";
 
 /* ---------- Minimal Telegram WebApp typings ---------- */
+export type TgLocation = { latitude: number; longitude: number; horizontal_accuracy?: number | null };
+export type TgLocationManager = {
+  isInited: boolean;
+  isLocationAvailable: boolean;
+  isAccessRequested: boolean;
+  isAccessGranted: boolean;
+  init(cb?: () => void): void;
+  getLocation(cb: (data: TgLocation | null) => void): void;
+  openSettings(): void;
+};
 type TgButton = { show(): void; hide(): void; onClick(cb: () => void): void; offClick(cb: () => void): void };
 export type TgWebApp = {
   initData: string;
@@ -24,6 +34,8 @@ export type TgWebApp = {
   openTelegramLink?(url: string): void;
   showAlert?(msg: string): void;
   BackButton: TgButton;
+  SettingsButton?: TgButton;
+  LocationManager?: TgLocationManager;
   HapticFeedback?: {
     impactOccurred(s: "light" | "medium" | "heavy" | "rigid" | "soft"): void;
     notificationOccurred(s: "error" | "success" | "warning"): void;
@@ -52,6 +64,7 @@ type Ctx = {
   meLoaded: boolean;
   setCustomer(c: Customer): void;
   cart: CartLine[];
+  cartLoaded: boolean;
   cartCount: number;
   qtyOf(id: string): number;
   add(id: string, qty?: number): void;
@@ -87,6 +100,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [meLoaded, setMeLoaded] = useState(false);
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [cartLoaded, setCartLoaded] = useState(false);
   const [promo, setPromoState] = useState("");
   const initData = useRef("");
 
@@ -133,6 +147,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       setTg(w);
     }
     setCart(readLS<CartLine[]>(CART_KEY, []));
+    setCartLoaded(true);
     setPromoState(readLS<string>(PROMO_KEY, ""));
     loadCatalog();
     api<{ user: { first_name: string; last_name?: string; username?: string; photo_url?: string } | null; customer: Customer | null }>("/api/me")
@@ -184,6 +199,7 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     meLoaded,
     setCustomer,
     cart,
+    cartLoaded,
     cartCount: cart.reduce((s, l) => s + l.qty, 0),
     qtyOf: (id) => cart.find((l) => l.id === id)?.qty ?? 0,
     add: (id, qty = 1) => {

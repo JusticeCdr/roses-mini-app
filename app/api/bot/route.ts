@@ -2,12 +2,24 @@ import { NextResponse } from "next/server";
 import { store } from "@/lib/store";
 import { getSettings, notifyIds } from "@/lib/data";
 import { appUrl, notifyCustomer, orderText, statusKeyboard, tg, webhookSecret } from "@/lib/telegram";
-import { ORDER_STATUS, type Order, type OrderStatus } from "@/lib/types";
+import { ORDER_STATUS, type Customer, type Order, type OrderStatus } from "@/lib/types";
+import { reverseGeocode, validCoords } from "@/lib/geo";
+
+const LOCATION_KEYBOARD = {
+  keyboard: [[{ text: "📍 Joylashuvimni yuborish", request_location: true }]],
+  resize_keyboard: true,
+  is_persistent: false,
+};
 
 export const dynamic = "force-dynamic";
 
 type Update = {
-  message?: { chat: { id: number }; from?: { id: number; first_name?: string }; text?: string };
+  message?: {
+    chat: { id: number };
+    from?: { id: number; first_name?: string; last_name?: string; username?: string };
+    text?: string;
+    location?: { latitude: number; longitude: number };
+  };
   callback_query?: {
     id: string; from: { id: number }; data?: string;
     message?: { chat: { id: number }; message_id: number };
@@ -40,6 +52,37 @@ async function onMessage(req: Request, m: NonNullable<Update["message"]>) {
   const text = (m.text ?? "").trim();
   const settings = await getSettings();
 
+  if (m.location) {
+    const c = validCoords(m.location.latitude, m.location.longitude);
+    if (!c) return;
+    const id = String(m.from?.id ?? chat_id);
+    const prev = await store().get<Customer>("customers", id);
+    const address = (await reverseGeocode(c.lat, c.lng)) ?? prev?.address ?? "";
+    await store().upsert<Customer>("customers", {
+      id,
+      first_name: prev?.first_name || m.from?.first_name || "",
+      last_name: prev?.last_name || m.from?.last_name || "",
+      username: prev?.username || m.from?.username || "",
+      name: prev?.name || [m.from?.first_name, m.from?.last_name].filter(Boolean).join(" "),
+      phone: prev?.phone ?? "",
+      address,
+      lat: c.lat,
+      lng: c.lng,
+      updated_at: new Date().toISOString(),
+    });
+    await tg("sendMessage", {
+      chat_id,
+      text: `✅ Joylashuvingiz saqlandi${address ? `:\n${address}` : ""}\nBuyurtma berishda manzil avtomatik to‘ldiriladi.`,
+      reply_markup: { inline_keyboard: [[{ text: "🌹 Do‘konni ochish", web_app: { url: appUrl(req) } }]] },
+    });
+    return;
+  }
+
+  if (text === "/joylashuv" || text === "/location") {
+    await tg("sendMessage", { chat_id, text: "Pastdagi tugmani bosing — joylashuvingizni bir bosishda yuboramiz 📍", reply_markup: LOCATION_KEYBOARD });
+    return;
+  }
+
   if (text === "/id") {
     await tg("sendMessage", {
       chat_id, parse_mode: "HTML",
@@ -53,6 +96,13 @@ async function onMessage(req: Request, m: NonNullable<Update["message"]>) {
     text: settings.welcome_text,
     reply_markup: { inline_keyboard: [[{ text: "🌹 Do‘konni ochish", web_app: { url: appUrl(req) } }]] },
   });
+  if (text.startsWith("/start")) {
+    await tg("sendMessage", {
+      chat_id,
+      text: "Yetkazib berish manzilini tez saqlash uchun pastdagi “📍 Joylashuvimni yuborish” tugmasini bosing.",
+      reply_markup: LOCATION_KEYBOARD,
+    });
+  }
 }
 
 async function onCallback(cq: NonNullable<Update["callback_query"]>) {

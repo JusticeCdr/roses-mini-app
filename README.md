@@ -2,6 +2,14 @@
 
 Next.js 16 + Tailwind 4 + Supabase. Mijoz qismi (`/`), admin panel (`/admin`) va Telegram bot (`/api/bot`) bitta loyihada.
 
+## Yangiliklar (13-noyabr)
+- Ochilishda gul barglari sachraydigan animatsiya (canvas, ~4 soniya, sessiyada bir marta; bosilsa o‘tkazib yuboriladi).
+- Liquid Glass pastki menyu (21st.dev komponenti asosida) va ravon siljiydigan indikator, sahifalararo o‘tish, “savatchaga uchish” animatsiyasi.
+- 📍 Joylashuvni aniqlash: Telegram LocationManager (Bot API 8.0) yoki brauzer geolokatsiyasi → manzil OpenStreetMap orqali avtomatik to‘ladi. Mini App ⋮ menyusida “Settings” → profil/joylashuv. Botda `/joylashuv` va “📍 Joylashuvimni yuborish” tugmasi.
+- Egaga buyurtma bilan birga xarita nuqtasi (sendLocation) va Yandex/Google xarita havolalari.
+- Admin: yuklangan rasmlar avtomatik WebP (max 1600px), mahsulotlarda qidiruv va “Sotuvda” tez tugmasi.
+- Testlar: `npm test` (vitest).
+
 ## Nimalar bor
 
 **Mijoz uchun (Telegram ichida):**

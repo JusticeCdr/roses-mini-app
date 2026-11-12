@@ -60,6 +60,8 @@ export type Customer = {
   name: string;
   phone: string;
   address: string;
+  lat?: number | null;
+  lng?: number | null;
   created_at?: string;
   updated_at?: string;
 };
@@ -88,6 +90,8 @@ export type Order = {
   name: string;
   phone: string;
   address: string;
+  lat?: number | null;
+  lng?: number | null;
   delivery_time: string;
   comment: string;
   payment: string;

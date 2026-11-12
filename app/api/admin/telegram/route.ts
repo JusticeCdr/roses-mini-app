@@ -19,6 +19,7 @@ export async function POST(req: Request) {
       await tg("setMyCommands", {
         commands: [
           { command: "start", description: "Do‘konni ochish" },
+          { command: "joylashuv", description: "Joylashuvni yuborish (manzil uchun)" },
           { command: "id", description: "Chat ID ni bilish (admin uchun)" },
         ],
       });

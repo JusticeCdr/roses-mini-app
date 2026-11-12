@@ -63,6 +63,8 @@ create table if not exists roses_customers (
   name text not null default '',
   phone text not null default '',
   address text not null default '',
+  lat double precision,
+  lng double precision,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -81,6 +83,8 @@ create table if not exists roses_orders (
   name text not null default '',
   phone text not null default '',
   address text not null default '',
+  lat double precision,
+  lng double precision,
   delivery_time text not null default '',
   comment text not null default '',
   payment text not null default '',
@@ -109,3 +113,7 @@ alter table roses_settings   enable row level security;
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('roses', 'roses', true, 5242880, array['image/jpeg','image/png','image/webp','image/gif'])
 on conflict (id) do nothing;
+
+-- 2026-11-13: joylashuv ustunlari (eski bazalar uchun)
+alter table roses_customers add column if not exists lat double precision, add column if not exists lng double precision;
+alter table roses_orders add column if not exists lat double precision, add column if not exists lng double precision;

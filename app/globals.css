@@ -119,3 +119,65 @@ img { display: block; max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
 }
+
+/* ---------- Opening splash ---------- */
+html.splash-lock, html.splash-lock body { overflow: hidden; }
+.splash {
+  background:
+    radial-gradient(70% 45% at 50% 40%, #fff7f4 0%, transparent 70%),
+    radial-gradient(120% 70% at 100% 0%, #f8e2e2 0%, transparent 60%),
+    radial-gradient(120% 70% at 0% 100%, #f3eadf 0%, transparent 60%),
+    #fbf5f1;
+}
+.splash-out { animation: splash-out 750ms cubic-bezier(0.65, 0, 0.35, 1) forwards; pointer-events: none; }
+@keyframes splash-out { 0% { opacity: 1; } 60% { opacity: 1; } 100% { opacity: 0; } }
+.splash-canvas-out { animation: petals-drop 750ms cubic-bezier(0.55, 0, 0.75, 0) forwards; }
+@keyframes petals-drop { to { transform: translateY(45vh); opacity: 0.2; } }
+.splash-logo-out { animation: logo-out 520ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+@keyframes logo-out { to { transform: scale(1.12); opacity: 0; filter: blur(6px); } }
+
+.splash-rose { animation: rose-in 900ms cubic-bezier(0.2, 1.1, 0.3, 1) both, rose-spin 9s linear 900ms infinite; }
+@keyframes rose-in { from { transform: scale(0.4) rotate(-40deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes rose-spin { to { transform: rotate(360deg); } }
+.bloom-petal { transform-box: fill-box; transform-origin: 50% 100%; animation: bloom 760ms cubic-bezier(0.2, 1.25, 0.4, 1) both; }
+@keyframes bloom { from { transform: scale(0.05) rotate(-30deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.splash-leaves { transform-box: fill-box; transform-origin: 50% 0%; animation: leaves 700ms 250ms cubic-bezier(0.2, 1.2, 0.4, 1) both; }
+@keyframes leaves { from { transform: scale(0); opacity: 0; } to { transform: none; opacity: 1; } }
+.splash-word { animation: word-in 900ms 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes word-in { from { opacity: 0; letter-spacing: 0.25em; filter: blur(8px); transform: translateY(8px); } to { opacity: 1; letter-spacing: -0.01em; filter: none; transform: none; } }
+.splash-tag { animation: fade-up 700ms 700ms ease-out both; }
+.splash-hint { animation: fade-up 600ms 2200ms ease-out both; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Page transition ---------- */
+.page-enter { animation: page-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes page-enter { from { opacity: 0; transform: translateY(14px) scale(0.995); } to { opacity: 1; transform: none; } }
+
+/* ---------- Liquid glass tab bar ---------- */
+.tabbar { transform: translate3d(0, 0, 0); will-change: transform; contain: layout paint; }
+.tab-indicator {
+  transition: transform 520ms cubic-bezier(0.34, 1.32, 0.5, 1);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.95), rgb(255 247 247 / 0.78));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -1px 0 rgb(156 71 88 / 0.08), 0 6px 18px -8px rgb(156 71 88 / 0.45), 0 0 0 1px rgb(156 71 88 / 0.08);
+}
+.tab-indicator-stretch { animation: tab-stretch 520ms cubic-bezier(0.3, 0.8, 0.4, 1); }
+@keyframes tab-stretch { 0% { scale: 1 1; } 35% { scale: 1.28 0.86; } 70% { scale: 0.96 1.04; } 100% { scale: 1 1; } }
+.tab-icon { transition: transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1), color 200ms; }
+.tab-active .tab-icon { transform: translateY(-1px) scale(1.1); }
+
+/* ---------- Fly to cart ---------- */
+.fly-dot { position: fixed; z-index: 90; width: 46px; height: 46px; border-radius: 9999px; overflow: hidden; pointer-events: none; box-shadow: 0 10px 24px -8px rgb(156 71 88 / 0.6), 0 0 0 3px #fff; }
+.fly-dot img { width: 100%; height: 100%; object-fit: cover; }
+.cart-bump { animation: cart-bump 520ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes cart-bump { 0% { transform: scale(1); } 35% { transform: scale(1.32) rotate(-8deg); } 100% { transform: scale(1); } }
+
+/* ---------- Scroll reveal ---------- */
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1), transform 600ms cubic-bezier(0.22, 1, 0.36, 1); }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } }
+
+.glass-rim { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.85), inset 0 0 0 1px rgb(255 255 255 / 0.35), 0 14px 40px -14px rgb(70 30 35 / 0.28), 0 0 0 1px rgb(33 28 25 / 0.06); }
+.bottom-bar-in { animation: bottom-bar-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes bottom-bar-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.locate-ping { animation: locate-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+@keyframes locate-ping { 75%, 100% { transform: scale(2.1); opacity: 0; } }

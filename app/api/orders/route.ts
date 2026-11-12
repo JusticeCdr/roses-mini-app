@@ -4,6 +4,7 @@ import { getSettings, notifyIds, quote } from "@/lib/data";
 import { notifyCustomer, notifyOwners, requestUser } from "@/lib/telegram";
 import { errorJson } from "@/lib/admin-auth";
 import type { Customer, Order, Promo } from "@/lib/types";
+import { validCoords } from "@/lib/geo";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,9 @@ export async function POST(req: Request) {
   try {
     const b = (await req.json()) as {
       items?: { id: string; qty: number }[]; promo?: string; name?: string; phone?: string;
-      address?: string; delivery_time?: string; comment?: string; payment?: string;
+      address?: string; delivery_time?: string; comment?: string; payment?: string; lat?: number; lng?: number;
     };
+    const coords = validCoords(b.lat, b.lng);
     const name = String(b.name ?? "").trim().slice(0, 80);
     const phone = String(b.phone ?? "").trim().slice(0, 30);
     const address = String(b.address ?? "").trim().slice(0, 300);
@@ -57,6 +59,7 @@ export async function POST(req: Request) {
       subtotal: q.subtotal, discount: q.discount, delivery_fee: q.delivery_fee, total: q.total,
       promo_code: q.promo?.code ?? null,
       name, phone, address,
+      lat: coords?.lat ?? null, lng: coords?.lng ?? null,
       delivery_time: String(b.delivery_time ?? "Imkon qadar tez").slice(0, 80),
       comment: String(b.comment ?? "").trim().slice(0, 500),
       payment: String(b.payment ?? "Naqd").slice(0, 40),
@@ -68,7 +71,7 @@ export async function POST(req: Request) {
     // Save the details for next time (registration).
     await s.upsert<Customer>("customers", {
       id: String(u.id), first_name: u.first_name ?? "", last_name: u.last_name ?? "",
-      username: u.username ?? "", name, phone, address, updated_at: new Date().toISOString(),
+      username: u.username ?? "", name, phone, address, ...(coords ?? {}), updated_at: new Date().toISOString(),
     });
 
     if (process.env.BOT_TOKEN) {

@@ -2,50 +2,93 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { LiquidGlass } from "./liquid-glass";
 import { clsx } from "clsx";
 import { ChevronLeft, Home, LayoutGrid, Minus, Package, Plus, ShoppingBag, User } from "lucide-react";
 import { money } from "@/lib/format";
 import { useShop } from "./shop-provider";
 
+const TABS = [
+  { href: "/", label: "Asosiy", icon: Home },
+  { href: "/catalog", label: "Katalog", icon: LayoutGrid },
+  { href: "/cart", label: "Savatcha", icon: ShoppingBag },
+  { href: "/orders", label: "Buyurtmalar", icon: Package },
+  { href: "/profile", label: "Profil", icon: User },
+];
+
+function tabIndex(path: string): number {
+  if (path === "/") return 0;
+  if (path.startsWith("/catalog") || path.startsWith("/product")) return 1;
+  if (path.startsWith("/cart") || path.startsWith("/checkout")) return 2;
+  if (path.startsWith("/orders")) return 3;
+  if (path.startsWith("/profile")) return 4;
+  return 0;
+}
+
 export function TabBar() {
   const path = usePathname();
-  const { cartCount } = useShop();
-  const tabs = [
-    { href: "/", label: "Asosiy", icon: Home },
-    { href: "/catalog", label: "Katalog", icon: LayoutGrid },
-    { href: "/cart", label: "Savatcha", icon: ShoppingBag, badge: cartCount },
-    { href: "/orders", label: "Buyurtmalar", icon: Package },
-    { href: "/profile", label: "Profil", icon: User },
-  ];
+  const { cartCount, haptic } = useShop();
+  const active = tabIndex(path);
+  const [stretchKey, setStretchKey] = useState(0);
+  const prev = useRef(active);
+  useEffect(() => {
+    if (prev.current !== active) {
+      setStretchKey((k) => k + 1);
+      prev.current = active;
+    }
+  }, [active]);
+
   return (
-    <nav aria-label="Asosiy menyu" className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3" style={{ paddingBottom: "calc(var(--safe-bottom) + 10px)" }}>
-      <ul className="glass-strong pointer-events-auto mx-auto grid h-16 max-w-md grid-cols-5 rounded-[26px] px-1.5">
-        {tabs.map(({ href, label, icon: Icon, badge }) => {
-          const active = href === "/" ? path === "/" : path.startsWith(href);
-          return (
-            <li key={href} className="flex items-center justify-center">
-              <Link
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={clsx(
-                  "press relative flex h-[54px] w-full flex-col items-center justify-center gap-0.5 rounded-[20px] text-[11px] font-semibold transition-colors",
-                  active ? "bg-accent-soft text-accent" : "text-muted",
-                )}
-              >
-                <span className="relative">
-                  <Icon size={22} strokeWidth={active ? 2.2 : 1.8} aria-hidden />
-                  {badge ? (
-                    <span key={badge} className="pop absolute -top-1.5 -right-2.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-accent px-1 text-[11px] leading-none font-bold text-accent-ink ring-2 ring-white">
-                      {badge}
-                    </span>
-                  ) : null}
-                </span>
-                {label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+    <nav aria-label="Asosiy menyu" className="tabbar pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3" style={{ paddingBottom: "calc(var(--safe-bottom) + 10px)" }}>
+      <LiquidGlass
+        radius={28}
+        bevelDepth={12}
+        scale={30}
+        aberration={2}
+        frost={3}
+        tint={0.8}
+        className="glass-rim pointer-events-auto mx-auto max-w-md"
+      >
+        <ul className="relative grid h-16 grid-cols-5 px-1.5">
+          <li aria-hidden className="pointer-events-none absolute inset-y-[5px] left-1.5" style={{ width: "calc((100% - 12px) / 5)" }}>
+            <span
+              className="tab-indicator absolute inset-0 block rounded-[22px]"
+              style={{ transform: `translateX(${active * 100}%)` }}
+            >
+              <span key={stretchKey} className={clsx("block h-full w-full rounded-[22px]", stretchKey > 0 && "tab-indicator-stretch")} />
+            </span>
+          </li>
+          {TABS.map(({ href, label, icon: Icon }, i) => {
+            const on = i === active;
+            const badge = href === "/cart" ? cartCount : 0;
+            return (
+              <li key={href} className={clsx("relative z-10 flex items-center justify-center", on && "tab-active")}>
+                <Link
+                  href={href}
+                  onClick={() => !on && haptic("select")}
+                  aria-current={on ? "page" : undefined}
+                  className={clsx(
+                    "flex h-[54px] w-full flex-col items-center justify-center gap-0.5 rounded-[22px] text-[11px] font-semibold transition-colors duration-300 active:scale-95",
+                    on ? "text-accent" : "text-ink/60",
+                  )}
+                >
+                  <span className="tab-icon relative" id={href === "/cart" ? "cart-tab-icon" : undefined}>
+                    <Icon size={22} strokeWidth={on ? 2.2 : 1.8} aria-hidden />
+                    {badge ? (
+                      <span key={badge} className="pop absolute -top-1.5 -right-2.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-accent px-1 text-[11px] leading-none font-bold text-accent-ink ring-2 ring-white">
+                        {badge}
+                      </span>
+                    ) : null}
+                  </span>
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </LiquidGlass>
     </nav>
   );
 }
@@ -124,10 +167,15 @@ export function Empty({ icon, title, text, action }: { icon: React.ReactNode; ti
 }
 
 export function BottomBar({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="pointer-events-none fixed inset-x-0 z-40 px-3" style={{ bottom: "calc(var(--tabbar) + 2px)" }}>
+  // Portalled to <body> so page transitions (transforms) never move it.
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  useEffect(() => setHost(document.body), []);
+  if (!host) return null;
+  return createPortal(
+    <div className="bottom-bar-in pointer-events-none fixed inset-x-0 z-40 px-3" style={{ bottom: "calc(var(--tabbar) + 2px)" }}>
       <div className="glass-strong pointer-events-auto mx-auto max-w-md rounded-[24px] p-2">{children}</div>
-    </div>
+    </div>,
+    host,
   );
 }
 

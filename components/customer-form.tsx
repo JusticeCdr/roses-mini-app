@@ -5,6 +5,7 @@ import { Phone } from "lucide-react";
 import type { Customer } from "@/lib/types";
 import { useShop } from "./shop-provider";
 import { Button, Field } from "./ui";
+import { LocateButton } from "./locate";
 
 export function formatPhone(raw: string): string {
   const d = raw.replace(/\D/g, "");
@@ -29,11 +30,12 @@ export function useContactRequest(onPhone: (p: string) => void) {
   return { supported, request };
 }
 
-export function CustomerForm({ submitLabel, onSaved }: { submitLabel: string; onSaved?(c: Customer): void }) {
+export function CustomerForm({ submitLabel, onSaved, autoLocate }: { submitLabel: string; onSaved?(c: Customer): void; autoLocate?: boolean }) {
   const { customer, me, api, setCustomer, haptic, inTelegram } = useShop();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const contact = useContactRequest(setPhone);
@@ -42,6 +44,7 @@ export function CustomerForm({ submitLabel, onSaved }: { submitLabel: string; on
     setName(customer?.name || me?.name || "");
     setPhone(customer?.phone || "");
     setAddress(customer?.address || "");
+    setCoords(customer?.lat != null && customer?.lng != null ? { lat: customer.lat, lng: customer.lng } : null);
   }, [customer, me]);
 
   async function save(e: React.FormEvent) {
@@ -49,7 +52,7 @@ export function CustomerForm({ submitLabel, onSaved }: { submitLabel: string; on
     setError(null);
     setBusy(true);
     try {
-      const r = await api<{ customer: Customer }>("/api/me", { method: "PUT", body: JSON.stringify({ name, phone, address }) });
+      const r = await api<{ customer: Customer }>("/api/me", { method: "PUT", body: JSON.stringify({ name, phone, address, ...(coords ?? {}) }) });
       setCustomer(r.customer);
       haptic("success");
       onSaved?.(r.customer);
@@ -85,7 +88,15 @@ export function CustomerForm({ submitLabel, onSaved }: { submitLabel: string; on
           ) : null}
         </div>
       </Field>
-      <Field label="Yetkazish manzili" hint="Tuman, ko‘cha, uy va mo‘ljal">
+      <div>
+        <span className="mb-1.5 block text-[13px] font-semibold text-muted">Joylashuv</span>
+        <LocateButton
+          coords={coords}
+          auto={autoLocate}
+          onLocated={(l) => { setCoords({ lat: l.lat, lng: l.lng }); if (l.address) setAddress(l.address); }}
+        />
+      </div>
+      <Field label="Yetkazish manzili" hint="Uy, xonadon va mo‘ljalni qo‘shib qo‘ying">
         <textarea className="field min-h-[88px] resize-none" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Chilonzor, Bunyodkor ko‘chasi…" rows={3} />
       </Field>
       {error ? <p role="alert" className="text-[15px] font-semibold text-accent">{error}</p> : null}

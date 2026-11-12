@@ -9,6 +9,7 @@ import { useBackButton, useShop } from "@/components/shop-provider";
 import { ProductCard } from "@/components/product-card";
 import { BottomBar, Button, Price, Stepper } from "@/components/ui";
 import { discountPercent, money } from "@/lib/format";
+import { flyToCart } from "@/lib/fly-to-cart";
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -112,7 +113,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
         ) : (
           <div className="flex items-center gap-3">
             <Stepper qty={qty} onChange={(q) => setLocalQty(Math.max(1, q))} />
-            <Button className="flex-1" onClick={() => add(p.id, qty)}>
+            <Button className="flex-1" onClick={(e) => { flyToCart(e.currentTarget, p.images[0]); add(p.id, qty); }}>
               Qo‘shish · {money(p.price * qty)}
             </Button>
           </div>

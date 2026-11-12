@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { money } from "./format";
+import { mapLinks } from "./geo";
 import { ORDER_STATUS, type Order, type OrderStatus } from "./types";
 
 export type TgUser = {
@@ -86,7 +87,12 @@ export function orderText(o: Order, forOwner: boolean): string {
   if (o.discount) lines.push(`Chegirma${o.promo_code ? ` (${esc(o.promo_code)})` : ""}: −${money(o.discount)}`);
   lines.push(`Yetkazib berish: ${o.delivery_fee ? money(o.delivery_fee) : "bepul"}`);
   lines.push(`<b>Jami: ${money(o.total)}</b>`, "");
-  lines.push(`👤 ${esc(o.name)}`, `📞 ${esc(o.phone)}`, `📍 ${esc(o.address)}`, `🕒 ${esc(o.delivery_time)}`);
+  lines.push(`👤 ${esc(o.name)}`, `📞 ${esc(o.phone)}`, `📍 ${esc(o.address)}`);
+  if (o.lat != null && o.lng != null) {
+    const m = mapLinks(o.lat, o.lng);
+    lines.push(`🗺 <a href="${m.yandex}">Yandex xarita</a> · <a href="${m.google}">Google xarita</a>`);
+  }
+  lines.push(`🕒 ${esc(o.delivery_time)}`);
   lines.push(`💳 ${esc(o.payment)}`);
   if (o.comment) lines.push(`💬 ${esc(o.comment)}`);
   if (forOwner) {
@@ -113,6 +119,9 @@ export async function notifyOwners(o: Order, chatIds: string[]): Promise<number>
         chat_id, text: orderText(o, true), parse_mode: "HTML",
         reply_markup: statusKeyboard(o), link_preview_options: { is_disabled: true },
       });
+      if (o.lat != null && o.lng != null) {
+        await tg("sendLocation", { chat_id, latitude: o.lat, longitude: o.lng }).catch(() => {});
+      }
       sent++;
     } catch (e) {
       console.error("notify owner failed", chat_id, e);
