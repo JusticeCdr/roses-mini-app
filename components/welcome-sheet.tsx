@@ -9,7 +9,7 @@ const KEY = "roses_welcome_skip";
 
 /** First-time registration inside Telegram: name, phone, address. */
 export function WelcomeSheet() {
-  const { inTelegram, meLoaded, customer, catalog } = useShop();
+  const { inTelegram, meLoaded, customer, catalog, t } = useShop();
   const path = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -30,11 +30,11 @@ export function WelcomeSheet() {
       <div className="sheet-in mx-auto max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-t-[28px] bg-bg px-5 pt-3" style={{ paddingBottom: "calc(24px + var(--safe-bottom))" }}>
         <div className="mx-auto mb-5 h-1.5 w-10 rounded-full bg-line" aria-hidden />
         <p className="text-[13px] font-semibold text-accent">{catalog?.settings.shop_name ?? "Roses"}</p>
-        <h2 id="welcome-title" className="mt-1 font-display text-[32px] leading-[1.05] font-semibold">Xush kelibsiz! Keling, tanishamiz</h2>
-        <p className="mt-2 mb-6 text-muted">Bir marta yozing — keyingi buyurtmalarda qayta so‘ramaymiz.</p>
-        <CustomerForm submitLabel="Ro‘yxatdan o‘tish" onSaved={() => setOpen(false)} />
+        <h2 id="welcome-title" className="mt-1 font-display text-[32px] leading-[1.05] font-semibold">{t("welcomeTitle")}</h2>
+        <p className="mt-2 mb-6 text-muted">{t("welcomeText")}</p>
+        <CustomerForm submitLabel={t("register")} onSaved={() => setOpen(false)} />
         <button type="button" onClick={close} className="press mt-2 min-h-12 w-full rounded-2xl text-[15px] font-semibold text-muted">
-          Keyinroq
+          {t("later")}
         </button>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { getSettings, notifyIds } from "@/lib/data";
 import { appUrl, notifyCustomer, orderText, statusKeyboard, tg, webhookSecret } from "@/lib/telegram";
 import { ORDER_STATUS, type Customer, type Order, type OrderStatus } from "@/lib/types";
 import { reverseGeocode, validCoords } from "@/lib/geo";
+import { asLang, translate } from "@/lib/i18n";
 
 const LOCATION_KEYBOARD = {
   keyboard: [[{ text: "📍 Joylashuvimni yuborish", request_location: true }]],
@@ -26,11 +27,8 @@ type Update = {
   };
 };
 
-const CUSTOMER_TEXT: Partial<Record<OrderStatus, string>> = {
-  accepted: "✅ Buyurtmangiz #{n} qabul qilindi. Tez orada tayyorlaymiz!",
-  delivering: "🚚 Buyurtmangiz #{n} yo‘lda. Kuryer siz bilan bog‘lanadi.",
-  done: "🎉 Buyurtmangiz #{n} yetkazildi. Xaridingiz uchun rahmat!",
-  cancelled: "Buyurtmangiz #{n} bekor qilindi. Savollar bo‘lsa, shu yerga yozing.",
+const CUSTOMER_KEY: Partial<Record<OrderStatus, "b_accepted" | "b_delivering" | "b_done" | "b_cancelled">> = {
+  accepted: "b_accepted", delivering: "b_delivering", done: "b_done", cancelled: "b_cancelled",
 };
 
 export async function POST(req: Request) {
@@ -123,6 +121,6 @@ async function onCallback(cq: NonNullable<Update["callback_query"]>) {
       link_preview_options: { is_disabled: true },
     }).catch(() => {});
   }
-  const msg = CUSTOMER_TEXT[order.status];
-  if (msg) await notifyCustomer(order, msg.replace("{n}", String(order.number)));
+  const key = CUSTOMER_KEY[order.status];
+  if (key) await notifyCustomer(order, translate(asLang(order.lang), key, { n: order.number }));
 }

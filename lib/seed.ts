@@ -11,6 +11,9 @@ export const DEFAULT_SETTINGS: Settings = {
   free_delivery_from: 500000,
   min_order: 0,
   notify_chat_ids: "",
+  card_number: "",
+  card_holder: "",
+  card_bank: "",
   welcome_text:
     "Assalomu alaykum! Roses gul do‘koniga xush kelibsiz 🌹\nBuketlar, qutidagi gullar va sovg‘alarni shu yerning o‘zida tanlab, buyurtma berishingiz mumkin.",
 };
@@ -31,12 +34,14 @@ const P = {
 };
 const img = (id: string) => unsplash(id, 900, 1125);
 
+const RU: Record<string, [string, string]> = {"p-1": ["Розовое утро", "15 розовых роз и зелень. Упаковка из крафт-бумаги с лентой."], "p-2": ["Белое и розовое", "Лёгкий букет из белых и розовых роз. Открытка в подарок."], "p-3": ["Красные розы · 25 шт", "25 красных роз на длинном стебле. Классика для признания в любви."], "p-4": ["Осень в стеклянной вазе", "Цветы розовых, бежевых и бордовых оттенков в стеклянной вазе. Ваза включена."], "p-5": ["Нежность в белой вазе", "Нежно-розовые розы в белой керамической вазе. Для дома и офиса."], "p-6": ["Цветы в крафт-коробке", "Микс цветов в крафт-коробке. Без воды остаются свежими 3–4 дня."], "p-7": ["Розовые розы · 11 шт", "11 розовых роз. Небольшой, но искренний подарок."], "p-8": ["На белом столе", "Нежный букет из розовых роз и мелких цветов."], "p-9": ["Стена из роз", "51 розовая и белая роза в большой коробке. Подарок, который запомнится."]};
+
 export function seedData() {
   const categories: Category[] = [
-    { id: "c-buket", name: "Buketlar", image: unsplash(P.pinkWhite, 300, 300), sort: 1, active: true },
-    { id: "c-quti", name: "Qutidagi gullar", image: unsplash(P.paperBag, 300, 300), sort: 2, active: true },
-    { id: "c-atirgul", name: "Atirgullar", image: unsplash(P.redRose, 300, 300), sort: 3, active: true },
-    { id: "c-vaza", name: "Vazadagi gullar", image: unsplash(P.vaseLight, 300, 300), sort: 4, active: true },
+    { id: "c-buket", name_ru: "Букеты", name: "Buketlar", image: unsplash(P.pinkWhite, 300, 300), sort: 1, active: true },
+    { id: "c-quti", name_ru: "Цветы в коробке", name: "Qutidagi gullar", image: unsplash(P.paperBag, 300, 300), sort: 2, active: true },
+    { id: "c-atirgul", name_ru: "Розы", name: "Atirgullar", image: unsplash(P.redRose, 300, 300), sort: 3, active: true },
+    { id: "c-vaza", name_ru: "Цветы в вазе", name: "Vazadagi gullar", image: unsplash(P.vaseLight, 300, 300), sort: 4, active: true },
   ];
 
   const p = (
@@ -44,7 +49,8 @@ export function seedData() {
     description: string, extra: Partial<Product> = {},
   ): Product => ({
     id, category_id, name, price, description, images: photos.map(img),
-    old_price: null, is_promo: false, is_new: false, in_stock: true, sort: 0, ...extra,
+    old_price: null, is_promo: false, is_new: false, in_stock: true, sort: 0,
+    name_ru: RU[id]?.[0] ?? "", description_ru: RU[id]?.[1] ?? "", ...extra,
   });
 
   const products: Product[] = [
@@ -71,19 +77,21 @@ export function seedData() {
   const banners: Banner[] = [
     {
       id: "b-1", title: "Birinchi buyurtmaga −10%", subtitle: "ROSES10 promo-kodi bilan",
-      image: unsplash(P.wall, 1200, 720), button_text: "Tanlash", link_type: "category", link_value: "c-buket",
+      image: unsplash(P.wall, 1200, 720), button_text: "Tanlash",
+      title_ru: "Скидка −10% на первый заказ", subtitle_ru: "С промокодом ROSES10", button_text_ru: "Выбрать", link_type: "category", link_value: "c-buket",
       active: true, sort: 1,
     },
     {
       id: "b-2", title: "Vazadagi gullar", subtitle: "Vaza bilan birga yetkazamiz",
-      image: unsplash(P.glassVase, 1200, 720), button_text: "Ko‘rish", link_type: "category", link_value: "c-vaza",
+      image: unsplash(P.glassVase, 1200, 720), button_text: "Ko‘rish",
+      title_ru: "Цветы в вазе", subtitle_ru: "Доставим вместе с вазой", button_text_ru: "Смотреть", link_type: "category", link_value: "c-vaza",
       active: true, sort: 2,
     },
   ];
 
   const promos: Promo[] = [
     {
-      id: "pr-1", code: "ROSES10", title: "Birinchi buyurtmaga 10% chegirma", type: "percent", value: 10,
+      id: "pr-1", code: "ROSES10", title: "Birinchi buyurtmaga 10% chegirma", title_ru: "Скидка 10% на первый заказ", type: "percent", value: 10,
       min_total: 300000, max_uses: null, uses: 0, expires_at: null, active: true, show_on_home: true,
     },
   ];

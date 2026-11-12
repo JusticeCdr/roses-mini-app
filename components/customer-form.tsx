@@ -31,7 +31,7 @@ export function useContactRequest(onPhone: (p: string) => void) {
 }
 
 export function CustomerForm({ submitLabel, onSaved, autoLocate }: { submitLabel: string; onSaved?(c: Customer): void; autoLocate?: boolean }) {
-  const { customer, me, api, setCustomer, haptic, inTelegram } = useShop();
+  const { customer, me, api, setCustomer, haptic, inTelegram, t, lang } = useShop();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -52,7 +52,7 @@ export function CustomerForm({ submitLabel, onSaved, autoLocate }: { submitLabel
     setError(null);
     setBusy(true);
     try {
-      const r = await api<{ customer: Customer }>("/api/me", { method: "PUT", body: JSON.stringify({ name, phone, address, ...(coords ?? {}) }) });
+      const r = await api<{ customer: Customer }>("/api/me", { method: "PUT", body: JSON.stringify({ name, phone, address, lang, ...(coords ?? {}) }) });
       setCustomer(r.customer);
       haptic("success");
       onSaved?.(r.customer);
@@ -66,10 +66,10 @@ export function CustomerForm({ submitLabel, onSaved, autoLocate }: { submitLabel
 
   return (
     <form onSubmit={save} className="space-y-4">
-      <Field label="Ismingiz">
-        <input className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder="Masalan, Dilnoza" required />
+      <Field label={t("name")}>
+        <input className="field" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" placeholder={t("namePh")} required />
       </Field>
-      <Field label="Telefon raqam">
+      <Field label={t("phone")}>
         <div className="flex gap-2">
           <input
             className="field"
@@ -82,25 +82,25 @@ export function CustomerForm({ submitLabel, onSaved, autoLocate }: { submitLabel
             required
           />
           {contact.supported ? (
-            <button type="button" onClick={contact.request} aria-label="Telegram raqamimni yuborish" className="press grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[14px] bg-accent-soft text-accent">
+            <button type="button" onClick={contact.request} aria-label={t("sendPhone")} className="press grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[14px] bg-accent-soft text-accent">
               <Phone size={20} />
             </button>
           ) : null}
         </div>
       </Field>
       <div>
-        <span className="mb-1.5 block text-[13px] font-semibold text-muted">Joylashuv</span>
+        <span className="mb-1.5 block text-[13px] font-semibold text-muted">{t("location")}</span>
         <LocateButton
           coords={coords}
           auto={autoLocate}
           onLocated={(l) => { setCoords({ lat: l.lat, lng: l.lng }); if (l.address) setAddress(l.address); }}
         />
       </div>
-      <Field label="Yetkazish manzili" hint="Uy, xonadon va mo‘ljalni qo‘shib qo‘ying">
+      <Field label={t("deliveryAddress")} hint={t("addressHint2")}>
         <textarea className="field min-h-[88px] resize-none" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Chilonzor, Bunyodkor ko‘chasi…" rows={3} />
       </Field>
-      {error ? <p role="alert" className="text-[15px] font-semibold text-accent">{error}</p> : null}
-      {!inTelegram ? <p className="text-[15px] text-muted">Ma’lumotlarni saqlash uchun do‘konni Telegram bot orqali oching.</p> : null}
+      {error ? <p role="alert" className="text-[15px] font-semibold text-rose">{error}</p> : null}
+      {!inTelegram ? <p className="text-[15px] text-muted">{t("saveViaTg")}</p> : null}
       <Button type="submit" className="w-full" loading={busy}>{submitLabel}</Button>
     </form>
   );

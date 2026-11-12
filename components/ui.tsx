@@ -7,15 +7,15 @@ import { createPortal } from "react-dom";
 import { LiquidGlass } from "./liquid-glass";
 import { clsx } from "clsx";
 import { ChevronLeft, Home, LayoutGrid, Minus, Package, Plus, ShoppingBag, User } from "lucide-react";
-import { money } from "@/lib/format";
+import type { TKey } from "@/lib/i18n";
 import { useShop } from "./shop-provider";
 
 const TABS = [
-  { href: "/", label: "Asosiy", icon: Home },
-  { href: "/catalog", label: "Katalog", icon: LayoutGrid },
-  { href: "/cart", label: "Savatcha", icon: ShoppingBag },
-  { href: "/orders", label: "Buyurtmalar", icon: Package },
-  { href: "/profile", label: "Profil", icon: User },
+  { href: "/", label: "tabHome" as TKey, icon: Home },
+  { href: "/catalog", label: "tabCatalog" as TKey, icon: LayoutGrid },
+  { href: "/cart", label: "tabCart" as TKey, icon: ShoppingBag },
+  { href: "/orders", label: "tabOrders" as TKey, icon: Package },
+  { href: "/profile", label: "tabProfile" as TKey, icon: User },
 ];
 
 function tabIndex(path: string): number {
@@ -29,7 +29,7 @@ function tabIndex(path: string): number {
 
 export function TabBar() {
   const path = usePathname();
-  const { cartCount, haptic } = useShop();
+  const { cartCount, haptic, t } = useShop();
   const active = tabIndex(path);
   const [stretchKey, setStretchKey] = useState(0);
   const prev = useRef(active);
@@ -82,7 +82,7 @@ export function TabBar() {
                       </span>
                     ) : null}
                   </span>
-                  {label}
+                  {t(label)}
                 </Link>
               </li>
             );
@@ -94,12 +94,12 @@ export function TabBar() {
 }
 
 export function PageHeader({ title, back, right }: { title: string; back?: string; right?: React.ReactNode }) {
-  const { inTelegram } = useShop();
+  const { inTelegram, t } = useShop();
   return (
     <header className="sticky top-0 z-30 bg-bg/80 backdrop-blur-xl" style={{ paddingTop: "var(--safe-top)" }}>
       <div className="mx-auto flex h-16 max-w-xl items-center gap-2 px-4">
         {back && !inTelegram ? (
-          <Link href={back} aria-label="Orqaga" className="press -ml-2 grid h-11 w-11 place-items-center rounded-full">
+          <Link href={back} aria-label={t("back")} className="press -ml-2 grid h-11 w-11 place-items-center rounded-full">
             <ChevronLeft size={24} />
           </Link>
         ) : null}
@@ -111,6 +111,7 @@ export function PageHeader({ title, back, right }: { title: string; back?: strin
 }
 
 export function Price({ price, old, className }: { price: number; old?: number | null; className?: string }) {
+  const { money } = useShop();
   return (
     <span className={clsx("flex flex-wrap items-baseline gap-x-2", className)}>
       <span className="font-bold">{money(price)}</span>
@@ -143,7 +144,7 @@ export function Button({
       disabled={props.disabled || loading}
       className={clsx(
         "press inline-flex min-h-[52px] items-center justify-center gap-2 rounded-2xl px-5 text-[16px] font-bold disabled:opacity-50",
-        variant === "primary" && "bg-accent text-accent-ink shadow-[0_8px_24px_-12px_rgb(156_71_88/0.7)]",
+        variant === "primary" && "bg-accent text-accent-ink shadow-[0_8px_24px_-12px_rgb(47_93_70/0.7)]",
         variant === "soft" && "bg-accent-soft text-accent",
         variant === "ghost" && "border border-line bg-surface text-ink",
         className,

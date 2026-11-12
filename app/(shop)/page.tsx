@@ -9,20 +9,19 @@ import { useShop } from "@/components/shop-provider";
 import { ProductCard, ProductCardSkeleton } from "@/components/product-card";
 import { Button } from "@/components/ui";
 import { RoseMark } from "@/components/logo";
-import { money } from "@/lib/format";
 import { flyToCart } from "@/lib/fly-to-cart";
 import type { Banner, Category, Product, PublicPromo } from "@/lib/types";
 
 export default function HomePage() {
-  const { catalog, catalogError, reloadCatalog, me, customer } = useShop();
+  const { catalog, catalogError, reloadCatalog, me, customer, t, money, L } = useShop();
   const [cat, setCat] = useState<string>("all");
 
   if (catalogError) {
     return (
       <div className="px-6 pt-24 text-center">
-        <p className="font-display text-[26px] font-semibold">Ulanib bo‘lmadi</p>
+        <p className="font-display text-[26px] font-semibold">{t("connectFail")}</p>
         <p className="mt-2 text-muted">{catalogError}</p>
-        <Button variant="ghost" className="mt-6" onClick={reloadCatalog}><RefreshCw size={18} /> Qayta urinish</Button>
+        <Button variant="ghost" className="mt-6" onClick={reloadCatalog}><RefreshCw size={18} /> {t("retry")}</Button>
       </div>
     );
   }
@@ -43,7 +42,7 @@ export default function HomePage() {
             <RoseMark size={40} />
             <div className="leading-none">
               <p className="font-display text-[28px] font-bold tracking-tight">{s?.shop_name ?? "Roses"}</p>
-              <p className="mt-0.5 text-[12px] font-semibold tracking-wide text-muted">{s?.tagline ?? "Gul do‘koni"}</p>
+              <p className="mt-0.5 text-[12px] font-semibold tracking-wide text-muted">{t("tagline")}</p>
             </div>
           </div>
           {firstName ? (
@@ -54,12 +53,13 @@ export default function HomePage() {
         </div>
 
         <h1 className="mt-6 font-display text-[34px] leading-[1.02] font-semibold tracking-tight text-balance">
-          {firstName ? <>{firstName}, bugun kimni <em className="text-accent not-italic">xursand</em> qilamiz?</> : <>Bugun kimni <em className="text-accent not-italic">xursand</em> qilamiz?</>}
+          {firstName ? <>{firstName}, {t("heroQ1")} </> : <>{t("heroQNoName1")} </>}
+          <em className="text-accent not-italic">{t("heroQ2")}</em>{t("heroQ3") === "?" ? "?" : ` ${t("heroQ3")}`}
         </h1>
 
         <Link href="/catalog?search=1" className="press shadow-soft mt-4 flex h-12 items-center gap-3 rounded-full bg-surface px-4 text-[15px] text-muted">
           <Search size={19} className="text-ink" aria-hidden />
-          Buket, atirgul yoki sovg‘a qidiring
+          {t("search")}
         </Link>
       </header>
 
@@ -71,7 +71,7 @@ export default function HomePage() {
       {/* Service facts from settings */}
       {s ? (
         <ul className="no-scrollbar mt-4 flex gap-2 overflow-x-auto px-4" aria-label="Xizmat">
-          {s.free_delivery_from ? <Fact icon={<Truck size={16} />}>{money(s.free_delivery_from)} dan bepul yetkazish</Fact> : s.delivery_fee ? <Fact icon={<Truck size={16} />}>Yetkazish {money(s.delivery_fee)}</Fact> : null}
+          {s.free_delivery_from ? <Fact icon={<Truck size={16} />}>{t("freeFrom", { sum: money(s.free_delivery_from) })}</Fact> : s.delivery_fee ? <Fact icon={<Truck size={16} />}>{t("deliveryCost", { sum: money(s.delivery_fee) })}</Fact> : null}
           {s.work_hours ? <Fact icon={<Clock size={16} />}>{s.work_hours}</Fact> : null}
           {s.address ? <Fact icon={<MapPin size={16} />}>{s.address}</Fact> : null}
         </ul>
@@ -86,14 +86,14 @@ export default function HomePage() {
 
       {/* Categories bento */}
       <section aria-labelledby="cat-title" className="mt-10 px-4">
-        <SectionHead id="cat-title" title="Kategoriyalar" href="/catalog" />
+        <SectionHead id="cat-title" title={t("categories")} href="/catalog" />
         {catalog ? <CategoryBento categories={catalog.categories} products={products} /> : <div className="grid grid-cols-2 gap-3">{[0, 1, 2, 3].map((i) => <div key={i} className="skeleton aspect-square rounded-[24px]" />)}</div>}
       </section>
 
       {/* Promo products */}
       {promoProducts.length ? (
         <section aria-labelledby="promo-title" className="mt-11">
-          <div className="px-4"><SectionHead id="promo-title" title="Aksiyadagi gullar" href="/catalog?promo=1" kicker="Chegirmalar" /></div>
+          <div className="px-4"><SectionHead id="promo-title" title={t("promoFlowers")} href="/catalog?promo=1" kicker={t("discounts")} /></div>
           <div className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-4 px-4 pb-3">
             {promoProducts.map((p) => <ProductCard key={p.id} p={p} size="lg" className="w-[58%] shrink-0 snap-start" />)}
           </div>
@@ -105,9 +105,9 @@ export default function HomePage() {
 
       {/* All products */}
       <section aria-labelledby="all-title" className="mt-11">
-        <div className="px-4"><SectionHead id="all-title" title="Barcha gullar" href={cat === "all" ? "/catalog" : `/catalog?c=${cat}`} /></div>
+        <div className="px-4"><SectionHead id="all-title" title={t("allFlowers")} href={cat === "all" ? "/catalog" : `/catalog?c=${cat}`} /></div>
         <div className="no-scrollbar -mt-1 mb-5 flex gap-2 overflow-x-auto px-4">
-          {[{ id: "all", name: "Hammasi" }, ...(catalog?.categories ?? [])].map((c) => (
+          {[{ id: "all", name: t("all") }, ...(catalog?.categories ?? []).map((c) => ({ id: c.id, name: L(c, "name") }))].map((c) => (
             <button
               key={c.id}
               type="button"
@@ -122,7 +122,7 @@ export default function HomePage() {
         <div className="grid grid-cols-2 gap-x-3 gap-y-6 px-4">
           {catalog ? list.map((p, i) => <ProductCard key={p.id} p={p} eager={i < 2} />) : Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)}
         </div>
-        {catalog && !list.length ? <p className="py-10 text-center text-muted">Bu bo‘limda hozircha gul yo‘q.</p> : null}
+        {catalog && !list.length ? <p className="py-10 text-center text-muted">{t("emptyCategory")}</p> : null}
       </section>
 
       {/* Footer */}
@@ -154,6 +154,7 @@ function Fact({ icon, children }: { icon: React.ReactNode; children: React.React
 }
 
 function SectionHead({ id, title, href, kicker }: { id: string; title: string; href: string; kicker?: string }) {
+  const { t } = useShop();
   return (
     <div className="mb-4 flex items-end justify-between gap-3">
       <div>
@@ -161,21 +162,22 @@ function SectionHead({ id, title, href, kicker }: { id: string; title: string; h
         <h2 id={id} className="font-display text-[30px] leading-none font-semibold tracking-tight">{title}</h2>
       </div>
       <Link href={href} className="press -mr-1 inline-flex min-h-11 items-center gap-0.5 px-1 text-[14px] font-semibold text-muted">
-        Hammasi <ChevronRight size={17} />
+        {t("seeAll")} <ChevronRight size={17} />
       </Link>
     </div>
   );
 }
 
 function CategoryBento({ categories, products }: { categories: Category[]; products: Product[] }) {
+  const { t, L } = useShop();
   const count = (id: string) => products.filter((p) => p.category_id === id).length;
   const tile = (c: Category, cls: string, big?: boolean) => (
     <Link key={c.id} href={`/catalog?c=${c.id}`} className={clsx("photo-zoom press shadow-soft relative block overflow-hidden rounded-[24px] bg-cream", cls)}>
       {c.image ? <img src={c.image.replace(/w=\d+&h=\d+/, "w=600&h=600")} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : null}
       <span className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" aria-hidden />
       <span className="absolute inset-x-0 bottom-0 p-3.5 text-white">
-        <span className={clsx("block font-display leading-[1.05] font-semibold", big ? "text-[26px]" : "text-[21px]")}>{c.name}</span>
-        <span className="mt-0.5 block text-[12px] font-semibold text-white/85">{count(c.id)} ta tur</span>
+        <span className={clsx("block font-display leading-[1.05] font-semibold", big ? "text-[26px]" : "text-[21px]")}>{L(c, "name")}</span>
+        <span className="mt-0.5 block text-[12px] font-semibold text-white/85">{t("kinds", { n: count(c.id) })}</span>
       </span>
     </Link>
   );
@@ -191,22 +193,22 @@ function CategoryBento({ categories, products }: { categories: Category[]; produ
 }
 
 function Featured({ p }: { p: Product }) {
-  const { add, qtyOf } = useShop();
+  const { add, qtyOf, t, money, L } = useShop();
   const router = useRouter();
   const inCart = qtyOf(p.id) > 0;
   return (
     <section aria-labelledby="feat" className="mx-4 mt-11 overflow-hidden rounded-[28px] bg-surface shadow-soft">
       <Link href={`/product/${p.id}`} className="photo-zoom relative block aspect-[16/11] overflow-hidden bg-cream">
         {p.images[0] ? <img src={p.images[0].replace(/w=\d+&h=\d+/, "w=1000&h=690")} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" /> : null}
-        <span className="glass absolute top-3 left-3 rounded-full px-3 py-1.5 text-[12px] font-bold">Yangi kelgan</span>
+        <span className="glass absolute top-3 left-3 rounded-full px-3 py-1.5 text-[12px] font-bold">{t("newArrival")}</span>
       </Link>
       <div className="p-5">
-        <h2 id="feat" className="font-display text-[30px] leading-none font-semibold">{p.name}</h2>
-        {p.description ? <p className="mt-2 line-clamp-2 text-[15px] text-ink/75">{p.description}</p> : null}
+        <h2 id="feat" className="font-display text-[30px] leading-none font-semibold">{L(p, "name")}</h2>
+        {p.description ? <p className="mt-2 line-clamp-2 text-[15px] text-ink/75">{L(p, "description")}</p> : null}
         <div className="mt-4 flex items-center justify-between gap-3">
           <span className="text-[18px] font-bold">{money(p.price)}</span>
           <Button className="!min-h-12 !rounded-full !px-5 !text-[15px]" onClick={(e) => { if (inCart) router.push("/cart"); else { flyToCart(e.currentTarget, p.images[0]); add(p.id); } }}>
-            {inCart ? <>Savatchada <ArrowRight size={17} /></> : "Savatchaga"}
+            {inCart ? <>{t("inCart")} <ArrowRight size={17} /></> : t("toCart")}
           </Button>
         </div>
       </div>
@@ -216,6 +218,7 @@ function Featured({ p }: { p: Product }) {
 
 function Banners({ banners }: { banners: Banner[] }) {
   const router = useRouter();
+  const { L } = useShop();
   const ref = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
 
@@ -254,11 +257,11 @@ function Banners({ banners }: { banners: Banner[] }) {
               <span className="glass absolute top-3 right-3 rounded-full px-2.5 py-1 text-[12px] font-bold tabular-nums">{i + 1} / {banners.length}</span>
             ) : null}
             <span className="absolute inset-x-0 bottom-0 p-5 text-white">
-              <span className="block max-w-[85%] font-display text-[34px] leading-[0.98] font-semibold text-balance">{b.title}</span>
-              {b.subtitle ? <span className="mt-2 block text-[15px] leading-snug text-white/90">{b.subtitle}</span> : null}
+              <span className="block max-w-[85%] font-display text-[34px] leading-[0.98] font-semibold text-balance">{L(b, "title")}</span>
+              {b.subtitle ? <span className="mt-2 block text-[15px] leading-snug text-white/90">{L(b, "subtitle")}</span> : null}
               {b.button_text && b.link_type !== "none" ? (
                 <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-[14px] font-bold text-ink">
-                  {b.button_text} <ArrowRight size={16} />
+                  {L(b, "button_text")} <ArrowRight size={16} />
                 </span>
               ) : null}
             </span>
@@ -275,7 +278,7 @@ function Banners({ banners }: { banners: Banner[] }) {
 }
 
 function PromoTicket({ p }: { p: PublicPromo }) {
-  const { setPromo, haptic } = useShop();
+  const { setPromo, haptic, t, money, L } = useShop();
   const [done, setDone] = useState(false);
   const apply = async () => {
     setPromo(p.code);
@@ -285,18 +288,18 @@ function PromoTicket({ p }: { p: PublicPromo }) {
     setTimeout(() => setDone(false), 2200);
   };
   return (
-    <div className="relative flex items-stretch overflow-hidden rounded-[22px] bg-accent text-accent-ink shadow-[0_14px_30px_-16px_rgb(156_71_88/0.8)]">
+    <div className="relative flex items-stretch overflow-hidden rounded-[22px] bg-accent text-accent-ink shadow-[0_14px_30px_-16px_rgb(47_93_70/0.8)]">
       <div className="min-w-0 flex-1 p-4 pr-3">
         <p className="font-display text-[30px] leading-none font-semibold">{p.type === "percent" ? `−${p.value}%` : `−${money(p.value)}`}</p>
-        {p.title ? <p className="mt-1.5 text-[14px] leading-snug font-semibold text-white/95">{p.title}</p> : null}
-        {p.min_total ? <p className="mt-1 text-[12px] text-white/80">{money(p.min_total)} dan boshlab</p> : null}
+        {p.title ? <p className="mt-1.5 text-[14px] leading-snug font-semibold text-white/95">{L(p, "title")}</p> : null}
+        {p.min_total ? <p className="mt-1 text-[12px] text-white/80">{t("promoFrom", { sum: money(p.min_total) })}</p> : null}
       </div>
       <div className="relative flex w-[120px] shrink-0 flex-col items-center justify-center gap-2 border-l-2 border-dashed border-white/35 p-3">
         <span className="absolute -top-3 -left-3 h-6 w-6 rounded-full bg-bg" aria-hidden />
         <span className="absolute -bottom-3 -left-3 h-6 w-6 rounded-full bg-bg" aria-hidden />
         <span className="text-[15px] font-bold tracking-wider">{p.code}</span>
         <button type="button" onClick={apply} className="press inline-flex min-h-9 items-center gap-1 rounded-full bg-white px-3 text-[13px] font-bold text-accent">
-          {done ? <><Check size={14} /> Olindi</> : <><Copy size={14} /> Olish</>}
+          {done ? <><Check size={14} /> {t("taken")}</> : <><Copy size={14} /> {t("take")}</>}
         </button>
       </div>
     </div>

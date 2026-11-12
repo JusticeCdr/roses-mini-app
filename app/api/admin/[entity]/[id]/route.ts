@@ -3,7 +3,8 @@ import { errorJson, isAdmin, unauthorized } from "@/lib/admin-auth";
 import { clean, ENTITIES } from "@/lib/admin-schema";
 import { store, type Table } from "@/lib/store";
 import { notifyCustomer } from "@/lib/telegram";
-import { ORDER_STATUS, type Order } from "@/lib/types";
+import type { Order } from "@/lib/types";
+import { asLang, translate } from "@/lib/i18n";
 
 type Ctx = { params: Promise<{ entity: string; id: string }> };
 
@@ -16,7 +17,8 @@ export async function PUT(req: Request, { params }: Ctx) {
     const row = await store().update(t, id, clean(t, await req.json(), true));
     if (t === "orders" && process.env.BOT_TOKEN) {
       const o = row as Order;
-      await notifyCustomer(o, `🌹 Buyurtmangiz #${o.number}: <b>${ORDER_STATUS[o.status]}</b>`);
+      const lang = asLang(o.lang);
+      await notifyCustomer(o, `🌹 ${translate(lang, "b_order", { n: o.number })}: <b>${translate(lang, `st_${o.status}` as "st_new")}</b>`);
     }
     return NextResponse.json({ row });
   } catch (e) {

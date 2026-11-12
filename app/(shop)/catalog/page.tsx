@@ -12,7 +12,7 @@ type Sort = "default" | "cheap" | "expensive";
 
 function Catalog() {
   const params = useSearchParams();
-  const { catalog } = useShop();
+  const { catalog, t, L, lang } = useShop();
   const [cat, setCat] = useState(params.get("c") ?? (params.get("promo") ? "promo" : "all"));
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<Sort>("default");
@@ -27,36 +27,36 @@ function Catalog() {
     if (cat === "promo") l = l.filter((p) => p.is_promo || (p.old_price ?? 0) > p.price);
     else if (cat !== "all") l = l.filter((p) => p.category_id === cat);
     const term = q.trim().toLowerCase();
-    if (term) l = l.filter((p) => `${p.name} ${p.description}`.toLowerCase().includes(term));
+    if (term) l = l.filter((p) => `${p.name} ${p.description} ${p.name_ru ?? ""} ${p.description_ru ?? ""}`.toLowerCase().includes(term));
     if (sort === "cheap") l = [...l].sort((a, b) => a.price - b.price);
     if (sort === "expensive") l = [...l].sort((a, b) => b.price - a.price);
     return l;
-  }, [catalog, cat, q, sort]);
+  }, [catalog, cat, q, sort, lang]);
 
   const chips = [
-    { id: "all", name: "Hammasi" },
-    { id: "promo", name: "Aksiya" },
-    ...(catalog?.categories ?? []).map((c) => ({ id: c.id, name: c.name })),
+    { id: "all", name: t("all") },
+    { id: "promo", name: t("promo") },
+    ...(catalog?.categories ?? []).map((c) => ({ id: c.id, name: L(c, "name") })),
   ];
 
   return (
     <div>
-      <PageHeader title="Katalog" />
+      <PageHeader title={t("catalog")} />
       <div className="sticky z-20 bg-bg/90 pb-3 backdrop-blur-xl" style={{ top: "calc(var(--safe-top) + 64px)" }}>
         <div className="px-4">
           <label className="relative block">
-            <span className="sr-only">Gul qidirish</span>
+            <span className="sr-only">{t("searchPh")}</span>
             <Search size={18} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted" aria-hidden />
             <input
               ref={input}
               type="search"
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Atirgul, buket, quti…"
+              placeholder={t("searchPh")}
               className="field !min-h-12 !rounded-full !py-3 pr-11 pl-11"
             />
             {q ? (
-              <button type="button" onClick={() => setQ("")} aria-label="Tozalash" className="absolute top-1/2 right-1 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-muted">
+              <button type="button" onClick={() => setQ("")} aria-label={t("clear")} className="absolute top-1/2 right-1 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full text-muted">
                 <X size={18} />
               </button>
             ) : null}
@@ -81,13 +81,13 @@ function Catalog() {
       </div>
 
       <div className="flex items-center justify-between px-4 pt-1 pb-4">
-        <p className="text-[13px] font-semibold text-muted">{catalog ? `${list.length} ta mahsulot` : " "}</p>
+        <p className="text-[13px] font-semibold text-muted">{catalog ? t("count", { n: list.length }) : " "}</p>
         <label className="text-[13px] font-semibold text-muted">
           <span className="sr-only">Saralash</span>
           <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="min-h-10 rounded-full border border-line bg-surface px-3 text-[14px] text-ink">
-            <option value="default">Tavsiya etilgan</option>
-            <option value="cheap">Avval arzonlari</option>
-            <option value="expensive">Avval qimmatlari</option>
+            <option value="default">{t("sortRec")}</option>
+            <option value="cheap">{t("sortCheap")}</option>
+            <option value="expensive">{t("sortExp")}</option>
           </select>
         </label>
       </div>
@@ -95,7 +95,7 @@ function Catalog() {
       <div className="grid grid-cols-2 gap-x-3 gap-y-6 px-4">
         {catalog ? list.map((p, i) => <ProductCard key={p.id} p={p} eager={i < 4} />) : Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
       </div>
-      {catalog && !list.length ? <p className="px-6 py-16 text-center text-muted">Hech narsa topilmadi. Boshqa so‘z bilan qidirib ko‘ring.</p> : null}
+      {catalog && !list.length ? <p className="px-6 py-16 text-center text-muted">{t("nothing")}</p> : null}
     </div>
   );
 }

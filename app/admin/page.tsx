@@ -119,7 +119,7 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
 
       <main className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-10 lg:py-10">
         {session.storage === "local" ? (
-          <p className="mb-5 rounded-[16px] bg-[#f6ecdc] px-4 py-3 text-[14px] text-ink">
+          <p className="mb-5 rounded-[16px] bg-[#f3e9d6] px-4 py-3 text-[14px] text-ink">
             <b>Demo rejim:</b> ma’lumotlar vaqtinchalik faylda saqlanmoqda. Doimiy saqlash uchun Supabase’ni ulang (README).
           </p>
         ) : null}
@@ -134,11 +134,13 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
             blank={{ name: "", price: 0, old_price: null, images: [], category_id: cats.rows?.[0]?.id ?? "", description: "", in_stock: true, is_promo: false, is_new: true, sort: 0 }}
             fields={[
               { key: "images", label: "Rasmlar", type: "images", hint: "Birinchi rasm katalogda ko‘rinadi. Tik (4:5) rasmlar eng chiroyli chiqadi." },
-              { key: "name", label: "Nomi", type: "text", required: true },
+              { key: "name", label: "Nomi (o‘zbekcha)", type: "text", required: true },
+              { key: "name_ru", label: "Nomi (ruscha)", type: "text", placeholder: "Название по-русски" },
               { key: "category_id", label: "Kategoriya", type: "select", options: catOptions },
               { key: "price", label: "Narxi (so‘m)", type: "number" },
               { key: "old_price", label: "Eski narxi (so‘m)", type: "number", hint: "To‘ldirilsa, chegirma foizi avtomatik ko‘rsatiladi" },
-              { key: "description", label: "Tavsif", type: "textarea" },
+              { key: "description", label: "Tavsif (o‘zbekcha)", type: "textarea" },
+              { key: "description_ru", label: "Tavsif (ruscha)", type: "textarea" },
               { key: "is_promo", label: "Aksiyada", type: "bool", hint: "“Aksiyadagi gullar” bo‘limida chiqadi" },
               { key: "is_new", label: "Yangi", type: "bool" },
               { key: "in_stock", label: "Sotuvda bor", type: "bool" },
@@ -174,7 +176,8 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
             onChange={cats.reload}
             blank={{ name: "", image: "", sort: (cats.rows?.length ?? 0) + 1, active: true }}
             fields={[
-              { key: "name", label: "Nomi", type: "text", required: true, placeholder: "Masalan, Buketlar" },
+              { key: "name", label: "Nomi (o‘zbekcha)", type: "text", required: true, placeholder: "Masalan, Buketlar" },
+              { key: "name_ru", label: "Nomi (ruscha)", type: "text", placeholder: "Например, Букеты" },
               { key: "image", label: "Rasm", type: "image", hint: "Kvadrat rasm — dumaloq qilib ko‘rsatiladi" },
               { key: "sort", label: "Tartib raqami", type: "number" },
               { key: "active", label: "Ko‘rinadi", type: "bool" },
@@ -198,9 +201,12 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
             blank={{ title: "", subtitle: "", image: "", button_text: "Ko‘rish", link_type: "category", link_value: "", active: true, sort: 1 }}
             fields={[
               { key: "image", label: "Rasm", type: "image", hint: "Gorizontal rasm (16:10) — bosh sahifaning yuqorisida" },
-              { key: "title", label: "Sarlavha", type: "text", placeholder: "Masalan, 8-mart uchun buketlar" },
-              { key: "subtitle", label: "Qisqa matn", type: "text" },
-              { key: "button_text", label: "Tugma matni", type: "text" },
+              { key: "title", label: "Sarlavha (o‘zbekcha)", type: "text", placeholder: "Masalan, 8-mart uchun buketlar" },
+              { key: "title_ru", label: "Sarlavha (ruscha)", type: "text" },
+              { key: "subtitle", label: "Qisqa matn (o‘zbekcha)", type: "text" },
+              { key: "subtitle_ru", label: "Qisqa matn (ruscha)", type: "text" },
+              { key: "button_text", label: "Tugma matni (o‘zbekcha)", type: "text" },
+              { key: "button_text_ru", label: "Tugma matni (ruscha)", type: "text" },
               { key: "link_type", label: "Bosilganda", type: "select", options: [
                 { value: "none", label: "Hech qayerga" }, { value: "category", label: "Kategoriyani ochish" },
                 { value: "product", label: "Mahsulotni ochish" },
@@ -232,7 +238,8 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
             blank={{ code: "", title: "", type: "percent", value: 10, min_total: 0, max_uses: null, expires_at: null, active: true, show_on_home: false }}
             fields={[
               { key: "code", label: "Kod", type: "text", required: true, placeholder: "BAHOR15", hint: "Lotin harflari va raqamlar" },
-              { key: "title", label: "Tavsif (mijozga ko‘rinadi)", type: "text", placeholder: "Bahor chegirmasi 15%" },
+              { key: "title", label: "Tavsif (o‘zbekcha, mijozga ko‘rinadi)", type: "text", placeholder: "Bahor chegirmasi 15%" },
+              { key: "title_ru", label: "Tavsif (ruscha)", type: "text", placeholder: "Весенняя скидка 15%" },
               { key: "type", label: "Chegirma turi", type: "select", options: [{ value: "percent", label: "Foiz (%)" }, { value: "fixed", label: "Summa (so‘m)" }] },
               { key: "value", label: "Qiymati", type: "number" },
               { key: "min_total", label: "Eng kam buyurtma (so‘m)", type: "number" },
@@ -265,7 +272,7 @@ function Dashboard({ session, onLogout }: { session: Session; onLogout(): void }
 
 function Badge({ children, tone }: { children: React.ReactNode; tone?: "accent" | "muted" }) {
   return (
-    <span className={clsx("rounded-full px-2 py-0.5 text-[12px] font-bold", tone === "accent" ? "bg-accent-soft text-accent" : tone === "muted" ? "bg-well text-muted" : "bg-sage text-ok")}>
+    <span className={clsx("rounded-full px-2 py-0.5 text-[12px] font-bold", tone === "accent" ? "bg-accent-soft text-accent" : tone === "muted" ? "bg-well text-muted" : "bg-accent-soft text-accent")}>
       {children}
     </span>
   );
@@ -273,8 +280,8 @@ function Badge({ children, tone }: { children: React.ReactNode; tone?: "accent" 
 
 const STATUS_TONE: Record<OrderStatus, string> = {
   new: "bg-accent text-white",
-  accepted: "bg-sage text-ok",
-  delivering: "bg-[#f6ecdc] text-warn",
+  accepted: "bg-accent-soft text-accent",
+  delivering: "bg-[#f3e9d6] text-warn",
   done: "bg-well text-ink",
   cancelled: "bg-well text-muted",
 };
@@ -352,6 +359,8 @@ function Orders() {
                     <p><span className="text-muted">Vaqt:</span> {o.delivery_time}</p>
                     <p><span className="text-muted">To‘lov:</span> {o.payment}</p>
                     {o.comment ? <p><span className="text-muted">Izoh:</span> {o.comment}</p> : null}
+                    {o.card_text ? <p><span className="text-muted">Otkritka:</span> “{o.card_text}”</p> : null}
+                    {o.lang === "ru" ? <p className="text-[13px] text-muted">Mijoz tili: ruscha 🇷🇺</p> : null}
                     <p className="flex flex-wrap gap-3 pt-1">
                       <a className="font-semibold text-accent" href={`tel:${o.phone.replace(/[^\d+]/g, "")}`}>Qo‘ng‘iroq qilish</a>
                       <a className="font-semibold text-accent" href={o.tg_username ? `https://t.me/${o.tg_username}` : `tg://user?id=${o.customer_id}`} target="_blank">Telegramda yozish</a>
@@ -422,6 +431,9 @@ function SettingsView({ session, onSeed }: { session: Session; onSeed(): void })
     { key: "delivery_fee", label: "Yetkazib berish narxi (so‘m)", type: "number" },
     { key: "free_delivery_from", label: "Shu summadan bepul yetkazish (so‘m)", type: "number", hint: "0 — har doim pullik" },
     { key: "min_order", label: "Eng kam buyurtma (so‘m)", type: "number" },
+    { key: "card_number", label: "To‘lov uchun karta raqami", type: "text", placeholder: "8600 1234 5678 9012", hint: "Mijoz “Karta orqali o‘tkazma”ni tanlasa, shu raqamni ko‘radi va nusxa oladi. Bo‘sh qolsa — faqat naqd." },
+    { key: "card_holder", label: "Karta egasi", type: "text", placeholder: "ALIYEV ALI" },
+    { key: "card_bank", label: "Karta turi / bank", type: "text", placeholder: "Uzcard · Kapitalbank" },
     { key: "notify_chat_ids", label: "Buyurtmalar keladigan chat ID", type: "text", hint: "Botga /id yozing — u sizning ID’ingizni aytadi. Bir nechta bo‘lsa, vergul bilan." },
     { key: "welcome_text", label: "Botdagi /start xabari", type: "textarea" },
   ];

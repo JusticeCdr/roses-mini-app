@@ -1,6 +1,7 @@
 export type Category = {
   id: string;
   name: string;
+  name_ru?: string;
   image: string | null;
   sort: number;
   active: boolean;
@@ -11,7 +12,9 @@ export type Product = {
   id: string;
   category_id: string | null;
   name: string;
+  name_ru?: string;
   description: string;
+  description_ru?: string;
   price: number;
   old_price: number | null;
   images: string[];
@@ -27,9 +30,12 @@ export type LinkType = "none" | "category" | "product" | "url";
 export type Banner = {
   id: string;
   title: string;
+  title_ru?: string;
   subtitle: string;
+  subtitle_ru?: string;
   image: string;
   button_text: string;
+  button_text_ru?: string;
   link_type: LinkType;
   link_value: string;
   active: boolean;
@@ -41,6 +47,7 @@ export type Promo = {
   id: string;
   code: string;
   title: string;
+  title_ru?: string;
   type: "percent" | "fixed";
   value: number;
   min_total: number;
@@ -62,6 +69,7 @@ export type Customer = {
   address: string;
   lat?: number | null;
   lng?: number | null;
+  lang?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -69,6 +77,7 @@ export type Customer = {
 export type OrderItem = {
   product_id: string;
   name: string;
+  name_ru?: string;
   price: number;
   qty: number;
   image: string | null;
@@ -94,6 +103,8 @@ export type Order = {
   lng?: number | null;
   delivery_time: string;
   comment: string;
+  card_text?: string;
+  lang?: string;
   payment: string;
   status: OrderStatus;
   created_at?: string;
@@ -110,9 +121,12 @@ export type Settings = {
   min_order: number;
   notify_chat_ids: string;
   welcome_text: string;
+  card_number: string;
+  card_holder: string;
+  card_bank: string;
 };
 
-export type PublicPromo = Pick<Promo, "code" | "title" | "type" | "value" | "min_total">;
+export type PublicPromo = Pick<Promo, "code" | "title" | "title_ru" | "type" | "value" | "min_total">;
 
 export type Catalog = {
   settings: Settings;

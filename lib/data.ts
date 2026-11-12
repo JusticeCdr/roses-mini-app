@@ -1,6 +1,7 @@
 import { store } from "./store";
 import { DEFAULT_SETTINGS } from "./seed";
 import type { Banner, Catalog, Category, Order, Product, Promo, Settings } from "./types";
+import { moneyIn, translate, type Lang } from "./i18n";
 
 export async function getSettings(): Promise<Settings> {
   const row = await store().get<{ id: string; data: Partial<Settings> }>("settings", "main");
@@ -38,7 +39,7 @@ export async function getCatalog(): Promise<Catalog> {
     banners: banners.filter((b) => b.active),
     promos: promos
       .filter((p) => p.active && p.show_on_home && promoUsable(p))
-      .map(({ code, title, type, value, min_total }) => ({ code, title, type, value, min_total })),
+      .map(({ code, title, title_ru, type, value, min_total }) => ({ code, title, title_ru, type, value, min_total })),
   };
 }
 
@@ -67,7 +68,7 @@ export type Quote = {
 };
 
 /** Prices are always taken from the database, never from the client. */
-export async function quote(lines: { id: string; qty: number }[], promoCode?: string | null): Promise<Quote> {
+export async function quote(lines: { id: string; qty: number }[], promoCode?: string | null, lang: Lang = "uz"): Promise<Quote> {
   const [products, settings] = await Promise.all([store().list<Product>("products"), getSettings()]);
   const map = new Map(products.map((p) => [p.id, p]));
   const items: Order["items"] = [];
@@ -75,7 +76,7 @@ export async function quote(lines: { id: string; qty: number }[], promoCode?: st
     const p = map.get(String(l.id));
     const qty = Math.max(1, Math.min(99, Math.floor(Number(l.qty) || 0)));
     if (!p || !p.in_stock) continue;
-    items.push({ product_id: p.id, name: p.name, price: p.price, qty, image: p.images[0] ?? null });
+    items.push({ product_id: p.id, name: p.name, ...(p.name_ru ? { name_ru: p.name_ru } : {}), price: p.price, qty, image: p.images[0] ?? null });
   }
   const subtotal = items.reduce((s, i) => s + i.price * i.qty, 0);
 
@@ -84,8 +85,8 @@ export async function quote(lines: { id: string; qty: number }[], promoCode?: st
   let discount = 0;
   if (promoCode) {
     const found = await findPromo(promoCode);
-    if (!found || !promoUsable(found)) promoError = "Bunday promo-kod yo‘q yoki muddati tugagan";
-    else if (subtotal < found.min_total) promoError = `Promo-kod ${found.min_total.toLocaleString("ru-RU")} so‘mdan boshlab ishlaydi`;
+    if (!found || !promoUsable(found)) promoError = translate(lang, "e_promo");
+    else if (subtotal < found.min_total) promoError = translate(lang, "e_promoMin", { sum: moneyIn(lang, found.min_total) });
     else {
       promo = found;
       discount = found.type === "percent" ? Math.round((subtotal * found.value) / 100) : Math.min(found.value, subtotal);

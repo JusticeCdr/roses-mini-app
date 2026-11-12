@@ -5,6 +5,7 @@ import { notifyCustomer, notifyOwners, requestUser } from "@/lib/telegram";
 import { errorJson } from "@/lib/admin-auth";
 import type { Customer, Order, Promo } from "@/lib/types";
 import { validCoords } from "@/lib/geo";
+import { moneyIn, reqLang, translate } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -23,31 +24,32 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const u = requestUser(req);
-  if (!u) return NextResponse.json({ error: "Buyurtma berish uchun do‘konni Telegram bot orqali oching" }, { status: 401 });
+  const lang = reqLang(req);
+  if (!u) return NextResponse.json({ error: translate(lang, "e_tg") }, { status: 401 });
   try {
     const b = (await req.json()) as {
       items?: { id: string; qty: number }[]; promo?: string; name?: string; phone?: string;
-      address?: string; delivery_time?: string; comment?: string; payment?: string; lat?: number; lng?: number;
+      address?: string; delivery_time?: string; comment?: string; payment?: string; lat?: number; lng?: number; card_text?: string;
     };
     const coords = validCoords(b.lat, b.lng);
     const name = String(b.name ?? "").trim().slice(0, 80);
     const phone = String(b.phone ?? "").trim().slice(0, 30);
     const address = String(b.address ?? "").trim().slice(0, 300);
     if (!name || phone.replace(/\D/g, "").length < 9 || address.length < 3) {
-      return NextResponse.json({ error: "Ism, telefon va manzilni to‘ldiring" }, { status: 400 });
+      return NextResponse.json({ error: translate(lang, "e_fields") }, { status: 400 });
     }
-    const [q, settings] = await Promise.all([quote((b.items ?? []).slice(0, 50), b.promo || null), getSettings()]);
-    if (!q.items.length) return NextResponse.json({ error: "Savatcha bo‘sh yoki mahsulotlar tugagan" }, { status: 400 });
+    const [q, settings] = await Promise.all([quote((b.items ?? []).slice(0, 50), b.promo || null, lang), getSettings()]);
+    if (!q.items.length) return NextResponse.json({ error: translate(lang, "e_empty") }, { status: 400 });
     if (b.promo && q.promoError) return NextResponse.json({ error: q.promoError }, { status: 400 });
     if (settings.min_order && q.subtotal < settings.min_order) {
-      return NextResponse.json({ error: `Eng kam buyurtma: ${settings.min_order.toLocaleString("ru-RU")} so‘m` }, { status: 400 });
+      return NextResponse.json({ error: translate(lang, "e_min", { sum: moneyIn(lang, settings.min_order) }) }, { status: 400 });
     }
 
     const s = store();
     if (q.promo) {
       const used = await s.list<Order>("orders", { where: { customer_id: String(u.id), promo_code: q.promo.code }, limit: 1 });
       if (used.some((o) => o.status !== "cancelled")) {
-        return NextResponse.json({ error: "Bu promo-koddan avval foydalangansiz" }, { status: 400 });
+        return NextResponse.json({ error: translate(lang, "e_promoUsed") }, { status: 400 });
       }
     }
     const order = await s.insert<Order>("orders", {
@@ -62,7 +64,9 @@ export async function POST(req: Request) {
       lat: coords?.lat ?? null, lng: coords?.lng ?? null,
       delivery_time: String(b.delivery_time ?? "Imkon qadar tez").slice(0, 80),
       comment: String(b.comment ?? "").trim().slice(0, 500),
-      payment: String(b.payment ?? "Naqd").slice(0, 40),
+      card_text: String(b.card_text ?? "").trim().slice(0, 300),
+      lang,
+      payment: b.payment === "card" ? "Karta orqali o‘tkazma" : "Naqd pul (kuryerga)",
       status: "new",
       created_at: new Date().toISOString(),
     });
@@ -71,7 +75,7 @@ export async function POST(req: Request) {
     // Save the details for next time (registration).
     await s.upsert<Customer>("customers", {
       id: String(u.id), first_name: u.first_name ?? "", last_name: u.last_name ?? "",
-      username: u.username ?? "", name, phone, address, ...(coords ?? {}), updated_at: new Date().toISOString(),
+      username: u.username ?? "", name, phone, address, ...(coords ?? {}), lang, updated_at: new Date().toISOString(),
     });
 
     if (process.env.BOT_TOKEN) {

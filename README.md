@@ -2,6 +2,14 @@
 
 Next.js 16 + Tailwind 4 + Supabase. Mijoz qismi (`/`), admin panel (`/admin`) va Telegram bot (`/api/bot`) bitta loyihada.
 
+## Yangiliklar (13-noyabr, 2-qism)
+- Til: o‘zbekcha / ruscha (Profil → Til). Telegram tili ruscha bo‘lsa avtomatik ruscha ochiladi. Mahsulot, kategoriya, banner va promo-kodlar uchun admin panelda ruscha maydonlar.
+- Rasmiylashtirish: 14 kunlik sana tanlash + vaqt oralig‘i, otkritka matni, kuryerga izoh.
+- To‘lov: naqd yoki karta orqali o‘tkazma — karta raqami (nusxa olish tugmasi bilan) admin → Sozlamalarda o‘zgartiriladi. Click/Payme olib tashlandi.
+- Yangi ranglar: shalfey-yashil, fil suyagi, chang atirgul va champagne-oltin.
+- Ochilish animatsiyasi realistik: haqiqiy atirgul surati fonda, egilgan/tomirli barglar, chuqurlik xiraligi, shamol.
+- Botni bir martalik ulash havolasi: `/api/telegram-setup?key=…` (kalit BOT_TOKEN’dan hosil bo‘ladi).
+
 ## Yangiliklar (13-noyabr)
 - Ochilishda gul barglari sachraydigan animatsiya (canvas, ~4 soniya, sessiyada bir marta; bosilsa o‘tkazib yuboriladi).
 - Liquid Glass pastki menyu (21st.dev komponenti asosida) va ravon siljiydigan indikator, sahifalararo o‘tish, “savatchaga uchish” animatsiyasi.

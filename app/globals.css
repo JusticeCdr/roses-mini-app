@@ -1,20 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #fbf8f4;
-  --color-blush: #f7ebe7;
-  --color-cream: #f4ede4;
+  /* Sage & ivory: botanical green, warm ivory, dusty rose for sale tags, champagne gold details */
+  --color-bg: #f6f3ec;
+  --color-blush: #e6ece2;
+  --color-cream: #ece6db;
   --color-surface: #ffffff;
-  --color-well: #f1ece6;
-  --color-ink: #211c19;
-  --color-muted: #6b625c;
-  --color-line: rgb(33 28 25 / 0.1);
-  --color-accent: #9c4758;
+  --color-well: #ebe6dc;
+  --color-ink: #1d2a23;
+  --color-muted: #5d695f;
+  --color-line: rgb(29 42 35 / 0.1);
+  --color-accent: #2f5d46;
   --color-accent-ink: #ffffff;
-  --color-accent-soft: #f5e9ea;
-  --color-sage: #e8ede4;
-  --color-ok: #3f7a52;
-  --color-warn: #a2611a;
+  --color-accent-soft: #e3ebe2;
+  --color-sage: #e3ebe2;
+  --color-ok: #2f5d46;
+  --color-warn: #96621a;
+  --color-rose: #b0536a;
+  --color-rose-soft: #f6e5e8;
+  --color-gold: #a8834f;
 
   --font-display: "Cormorant Garamond", Georgia, serif;
   --font-sans: "Manrope Variable", "Manrope", system-ui, -apple-system, sans-serif;
@@ -36,8 +40,8 @@ html, body { margin: 0; }
 
 body {
   background:
-    radial-gradient(120% 60% at 100% 0%, #f8e9e6 0%, transparent 55%),
-    radial-gradient(90% 50% at 0% 0%, #f3efe6 0%, transparent 60%),
+    radial-gradient(120% 60% at 100% 0%, #e7eee3 0%, transparent 55%),
+    radial-gradient(90% 50% at 0% 0%, #f4eee2 0%, transparent 60%),
     var(--color-bg);
   background-repeat: no-repeat;
   color: var(--color-ink);
@@ -98,7 +102,7 @@ img { display: block; max-width: 100%; }
   transition: border-color 160ms, box-shadow 160ms;
 }
 .field::placeholder { color: #9a918a; }
-.field:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgb(156 71 88 / 0.14); }
+.field:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgb(47 93 70 / 0.14); }
 
 }
 
@@ -122,27 +126,20 @@ img { display: block; max-width: 100%; }
 
 /* ---------- Opening splash ---------- */
 html.splash-lock, html.splash-lock body { overflow: hidden; }
-.splash {
+.splash { background: #f3efe6; }
+.splash-photo { animation: ken-burns 7s cubic-bezier(0.25, 0.1, 0.25, 1) both; transform-origin: 50% 40%; }
+@keyframes ken-burns { from { transform: scale(1.18); filter: saturate(0.9); } to { transform: scale(1.02); filter: saturate(1.05); } }
+.splash-veil {
   background:
-    radial-gradient(70% 45% at 50% 40%, #fff7f4 0%, transparent 70%),
-    radial-gradient(120% 70% at 100% 0%, #f8e2e2 0%, transparent 60%),
-    radial-gradient(120% 70% at 0% 100%, #f3eadf 0%, transparent 60%),
-    #fbf5f1;
+    radial-gradient(60% 38% at 50% 44%, rgb(246 243 236 / 0.92) 0%, rgb(246 243 236 / 0.55) 55%, rgb(246 243 236 / 0.15) 100%),
+    linear-gradient(180deg, rgb(246 243 236 / 0.35) 0%, rgb(246 243 236 / 0) 40%, rgb(246 243 236 / 0.55) 100%);
 }
-.splash-out { animation: splash-out 750ms cubic-bezier(0.65, 0, 0.35, 1) forwards; pointer-events: none; }
-@keyframes splash-out { 0% { opacity: 1; } 60% { opacity: 1; } 100% { opacity: 0; } }
-.splash-canvas-out { animation: petals-drop 750ms cubic-bezier(0.55, 0, 0.75, 0) forwards; }
-@keyframes petals-drop { to { transform: translateY(45vh); opacity: 0.2; } }
+.splash-out { animation: splash-out 900ms cubic-bezier(0.65, 0, 0.35, 1) forwards; pointer-events: none; }
+@keyframes splash-out { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.06); } }
 .splash-logo-out { animation: logo-out 520ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-@keyframes logo-out { to { transform: scale(1.12); opacity: 0; filter: blur(6px); } }
-
-.splash-rose { animation: rose-in 900ms cubic-bezier(0.2, 1.1, 0.3, 1) both, rose-spin 9s linear 900ms infinite; }
-@keyframes rose-in { from { transform: scale(0.4) rotate(-40deg); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes rose-spin { to { transform: rotate(360deg); } }
-.bloom-petal { transform-box: fill-box; transform-origin: 50% 100%; animation: bloom 760ms cubic-bezier(0.2, 1.25, 0.4, 1) both; }
-@keyframes bloom { from { transform: scale(0.05) rotate(-30deg); opacity: 0; } to { transform: none; opacity: 1; } }
-.splash-leaves { transform-box: fill-box; transform-origin: 50% 0%; animation: leaves 700ms 250ms cubic-bezier(0.2, 1.2, 0.4, 1) both; }
-@keyframes leaves { from { transform: scale(0); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes logo-out { to { transform: scale(1.08); opacity: 0; filter: blur(6px); } }
+.splash-mark { animation: mark-in 1000ms cubic-bezier(0.2, 1, 0.3, 1) both; }
+@keyframes mark-in { from { opacity: 0; transform: scale(0.6) rotate(-25deg); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
 .splash-word { animation: word-in 900ms 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes word-in { from { opacity: 0; letter-spacing: 0.25em; filter: blur(8px); transform: translateY(8px); } to { opacity: 1; letter-spacing: -0.01em; filter: none; transform: none; } }
 .splash-tag { animation: fade-up 700ms 700ms ease-out both; }
@@ -157,8 +154,8 @@ html.splash-lock, html.splash-lock body { overflow: hidden; }
 .tabbar { transform: translate3d(0, 0, 0); will-change: transform; contain: layout paint; }
 .tab-indicator {
   transition: transform 520ms cubic-bezier(0.34, 1.32, 0.5, 1);
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.95), rgb(255 247 247 / 0.78));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -1px 0 rgb(156 71 88 / 0.08), 0 6px 18px -8px rgb(156 71 88 / 0.45), 0 0 0 1px rgb(156 71 88 / 0.08);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.97), rgb(244 248 243 / 0.82));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 1), inset 0 -1px 0 rgb(47 93 70 / 0.08), 0 6px 18px -8px rgb(47 93 70 / 0.45), 0 0 0 1px rgb(47 93 70 / 0.08);
 }
 .tab-indicator-stretch { animation: tab-stretch 520ms cubic-bezier(0.3, 0.8, 0.4, 1); }
 @keyframes tab-stretch { 0% { scale: 1 1; } 35% { scale: 1.28 0.86; } 70% { scale: 0.96 1.04; } 100% { scale: 1 1; } }
@@ -166,7 +163,7 @@ html.splash-lock, html.splash-lock body { overflow: hidden; }
 .tab-active .tab-icon { transform: translateY(-1px) scale(1.1); }
 
 /* ---------- Fly to cart ---------- */
-.fly-dot { position: fixed; z-index: 90; width: 46px; height: 46px; border-radius: 9999px; overflow: hidden; pointer-events: none; box-shadow: 0 10px 24px -8px rgb(156 71 88 / 0.6), 0 0 0 3px #fff; }
+.fly-dot { position: fixed; z-index: 90; width: 46px; height: 46px; border-radius: 9999px; overflow: hidden; pointer-events: none; box-shadow: 0 10px 24px -8px rgb(47 93 70 / 0.6), 0 0 0 3px #fff; }
 .fly-dot img { width: 100%; height: 100%; object-fit: cover; }
 .cart-bump { animation: cart-bump 520ms cubic-bezier(0.34, 1.56, 0.64, 1); }
 @keyframes cart-bump { 0% { transform: scale(1); } 35% { transform: scale(1.32) rotate(-8deg); } 100% { transform: scale(1); } }
@@ -181,3 +178,10 @@ html.splash-lock, html.splash-lock body { overflow: hidden; }
 @keyframes bottom-bar-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .locate-ping { animation: locate-ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite; }
 @keyframes locate-ping { 75%, 100% { transform: scale(2.1); opacity: 0; } }
+
+.card-face {
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(201 168 112 / 0.35) 0%, transparent 55%),
+    linear-gradient(135deg, #2f5d46 0%, #1e3d2e 100%);
+  box-shadow: 0 18px 40px -20px rgb(30 61 46 / 0.8), inset 0 1px 0 rgb(255 255 255 / 0.18);
+}

@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Catalog, Customer, Product } from "@/lib/types";
+import { asLang, loc, moneyIn, translate, type Lang, type TKey } from "@/lib/i18n";
 
 /* ---------- Minimal Telegram WebApp typings ---------- */
 export type TgLocation = { latitude: number; longitude: number; horizontal_accuracy?: number | null };
@@ -18,7 +19,7 @@ export type TgLocationManager = {
 type TgButton = { show(): void; hide(): void; onClick(cb: () => void): void; offClick(cb: () => void): void };
 export type TgWebApp = {
   initData: string;
-  initDataUnsafe: { user?: { id: number; first_name: string; last_name?: string; username?: string; photo_url?: string } };
+  initDataUnsafe: { user?: { id: number; first_name: string; last_name?: string; username?: string; photo_url?: string; language_code?: string } };
   platform: string;
   version: string;
   ready(): void;
@@ -73,12 +74,18 @@ type Ctx = {
   promo: string;
   setPromo(code: string): void;
   api<T = unknown>(path: string, init?: RequestInit): Promise<T>;
+  lang: Lang;
+  setLang(l: Lang): void;
+  t(key: TKey, vars?: Record<string, string | number>): string;
+  money(n: number): string;
+  L(row: object, field: string): string;
   haptic(kind: "tap" | "success" | "error" | "select"): void;
 };
 
 const ShopContext = createContext<Ctx | null>(null);
 const CART_KEY = "roses_cart_v1";
 const PROMO_KEY = "roses_promo_v1";
+const LANG_KEY = "roses_lang";
 
 function readLS<T>(key: string, fallback: T): T {
   try {
@@ -103,6 +110,8 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   const [cartLoaded, setCartLoaded] = useState(false);
   const [promo, setPromoState] = useState("");
   const initData = useRef("");
+  const [lang, setLangState] = useState<Lang>("uz");
+  const langRef = useRef<Lang>("uz");
 
   const api = useCallback(async <T,>(path: string, init: RequestInit = {}): Promise<T> => {
     const res = await fetch(path, {
@@ -110,12 +119,13 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
       headers: {
         "content-type": "application/json",
         "x-telegram-init-data": initData.current,
+        "x-lang": langRef.current,
         ...(init.headers ?? {}),
       },
       cache: "no-store",
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error((data as { error?: string }).error ?? "Xatolik yuz berdi");
+    if (!res.ok) throw new Error((data as { error?: string }).error ?? translate(langRef.current, "e_generic"));
     return data as T;
   }, []);
 
@@ -127,12 +137,17 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const w = window.Telegram?.WebApp;
     const inside = Boolean(w && w.initData);
+    const saved = readLS<string>(LANG_KEY, "");
+    const initial = saved ? asLang(saved) : w?.initDataUnsafe?.user?.language_code === "ru" ? "ru" : "uz";
+    langRef.current = initial;
+    setLangState(initial);
+    document.documentElement.lang = initial;
     if (w && inside) {
       initData.current = w.initData;
       w.ready();
       w.expand();
-      w.setHeaderColor?.("#faf8f5");
-      w.setBackgroundColor?.("#faf8f5");
+      w.setHeaderColor?.("#f6f3ec");
+      w.setBackgroundColor?.("#f6f3ec");
       w.setBottomBarColor?.("#ffffff");
       w.disableVerticalSwipes?.();
       const applyInsets = () => {
@@ -218,6 +233,17 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     },
     api,
     haptic,
+    lang,
+    setLang: (l) => {
+      langRef.current = l;
+      setLangState(l);
+      writeLS(LANG_KEY, l);
+      document.documentElement.lang = l;
+      haptic("select");
+    },
+    t: (key, vars) => translate(lang, key, vars),
+    money: (n) => moneyIn(lang, n),
+    L: (row, field) => loc(lang, row as Record<string, unknown>, field),
   };
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;

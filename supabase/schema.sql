@@ -117,3 +117,11 @@ on conflict (id) do nothing;
 -- 2026-11-13: joylashuv ustunlari (eski bazalar uchun)
 alter table roses_customers add column if not exists lat double precision, add column if not exists lng double precision;
 alter table roses_orders add column if not exists lat double precision, add column if not exists lng double precision;
+
+-- 2026-11-13: ruscha matnlar, til, otkritka matni
+alter table roses_categories add column if not exists name_ru text not null default '';
+alter table roses_products add column if not exists name_ru text not null default '', add column if not exists description_ru text not null default '';
+alter table roses_banners add column if not exists title_ru text not null default '', add column if not exists subtitle_ru text not null default '', add column if not exists button_text_ru text not null default '';
+alter table roses_promos add column if not exists title_ru text not null default '';
+alter table roses_customers add column if not exists lang text not null default 'uz';
+alter table roses_orders add column if not exists lang text not null default 'uz', add column if not exists card_text text not null default '';

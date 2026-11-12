@@ -15,10 +15,10 @@ export type QuoteResult = {
 
 /** Server-side price check for the cart (prices + promo come from the database). */
 export function useQuote() {
-  const { cart, promo, api } = useShop();
+  const { cart, promo, api, lang } = useShop();
   const [quote, setQuote] = useState<QuoteResult | null>(null);
   const [loading, setLoading] = useState(false);
-  const key = JSON.stringify([cart, promo]);
+  const key = JSON.stringify([cart, promo, lang]);
 
   useEffect(() => {
     if (!cart.length) {

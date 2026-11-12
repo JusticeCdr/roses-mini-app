@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { money } from "./format";
 import { mapLinks } from "./geo";
 import { ORDER_STATUS, type Order, type OrderStatus } from "./types";
+import { asLang, moneyIn, translate } from "./i18n";
 
 export type TgUser = {
   id: number;
@@ -76,24 +77,30 @@ export function appUrl(req: Request): string {
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export function orderText(o: Order, forOwner: boolean): string {
+  const lang = forOwner ? "uz" : asLang(o.lang);
+  const m = (n: number) => moneyIn(lang, n);
+  const t = (k: Parameters<typeof translate>[1], v?: Record<string, string | number>) => translate(lang, k, v);
+  const status = forOwner ? ORDER_STATUS[o.status] : t(`st_${o.status}` as Parameters<typeof translate>[1]);
+  const name = (i: Order["items"][number]) => (lang === "ru" && i.name_ru ? i.name_ru : i.name);
   const lines = [
-    forOwner ? `🌹 <b>Yangi buyurtma #${o.number}</b>` : `🌹 <b>Buyurtma #${o.number}</b>`,
-    `Holati: <b>${ORDER_STATUS[o.status]}</b>`,
+    forOwner ? `🌹 <b>Yangi buyurtma #${o.number}</b>${o.lang === "ru" ? " 🇷🇺" : ""}` : `🌹 <b>${t("b_order", { n: o.number })}</b>`,
+    `${forOwner ? "Holati" : t("b_status")}: <b>${status}</b>`,
     "",
-    ...o.items.map((i) => `• ${esc(i.name)} × ${i.qty} — ${money(i.price * i.qty)}`),
+    ...o.items.map((i) => `• ${esc(name(i))} × ${i.qty} — ${m(i.price * i.qty)}`),
     "",
-    `Mahsulotlar: ${money(o.subtotal)}`,
+    `${forOwner ? "Mahsulotlar" : t("goods")}: ${m(o.subtotal)}`,
   ];
-  if (o.discount) lines.push(`Chegirma${o.promo_code ? ` (${esc(o.promo_code)})` : ""}: −${money(o.discount)}`);
-  lines.push(`Yetkazib berish: ${o.delivery_fee ? money(o.delivery_fee) : "bepul"}`);
-  lines.push(`<b>Jami: ${money(o.total)}</b>`, "");
+  if (o.discount) lines.push(`${forOwner ? "Chegirma" : t("discount")}${o.promo_code ? ` (${esc(o.promo_code)})` : ""}: −${m(o.discount)}`);
+  lines.push(`${forOwner ? "Yetkazib berish" : t("delivery")}: ${o.delivery_fee ? m(o.delivery_fee) : forOwner ? "bepul" : t("free")}`);
+  lines.push(`<b>${forOwner ? "Jami" : t("b_total")}: ${m(o.total)}</b>`, "");
   lines.push(`👤 ${esc(o.name)}`, `📞 ${esc(o.phone)}`, `📍 ${esc(o.address)}`);
-  if (o.lat != null && o.lng != null) {
-    const m = mapLinks(o.lat, o.lng);
-    lines.push(`🗺 <a href="${m.yandex}">Yandex xarita</a> · <a href="${m.google}">Google xarita</a>`);
+  if (forOwner && o.lat != null && o.lng != null) {
+    const ml = mapLinks(o.lat, o.lng);
+    lines.push(`🗺 <a href="${ml.yandex}">Yandex xarita</a> · <a href="${ml.google}">Google xarita</a>`);
   }
   lines.push(`🕒 ${esc(o.delivery_time)}`);
   lines.push(`💳 ${esc(o.payment)}`);
+  if (o.card_text) lines.push(`💌 ${forOwner ? "Otkritka" : t("cardMsg")}: ${esc(o.card_text)}`);
   if (o.comment) lines.push(`💬 ${esc(o.comment)}`);
   if (forOwner) {
     lines.push("", o.tg_username ? `Telegram: @${esc(o.tg_username)}` : `Telegram: <a href="tg://user?id=${o.customer_id}">mijoz</a>`);
@@ -136,4 +143,24 @@ export async function notifyCustomer(o: Order, text?: string) {
   } catch (e) {
     console.error("notify customer failed", e);
   }
+}
+
+/** Webhook + menu button + commands. Used by the admin button and the one-time setup link. */
+export async function setupBot(url: string): Promise<{ bot: string; url: string }> {
+  if (!url.startsWith("https://")) throw new Error("Bot faqat https manzil bilan ishlaydi — avval Vercel’ga yuklang");
+  await tg("setWebhook", {
+    url: `${url}/api/bot`, secret_token: webhookSecret(),
+    allowed_updates: ["message", "callback_query"], drop_pending_updates: true,
+  });
+  await tg("setChatMenuButton", { menu_button: { type: "web_app", text: "Do‘kon", web_app: { url } } });
+  const commands = (lang: "uz" | "ru") => lang === "ru"
+    ? [{ command: "start", description: "Открыть магазин" }, { command: "joylashuv", description: "Отправить местоположение" }]
+    : [{ command: "start", description: "Do‘konni ochish" }, { command: "joylashuv", description: "Joylashuvni yuborish" }, { command: "id", description: "Chat ID (admin uchun)" }];
+  await tg("setMyCommands", { commands: commands("uz") });
+  await tg("setMyCommands", { commands: commands("ru"), language_code: "ru" }).catch(() => {});
+  await tg("setMyDescription", { description: "🌹 Roses — buketlar, atirgullar va qutidagi gullar. Telegram ichida tanlang va buyurtma bering." }).catch(() => {});
+  await tg("setMyDescription", { description: "🌹 Roses — букеты, розы и цветы в коробке. Выбирайте и заказывайте прямо в Telegram.", language_code: "ru" }).catch(() => {});
+  await tg("setMyShortDescription", { short_description: "Roses — gul do‘koni 🌹" }).catch(() => {});
+  const me = await tg<{ username: string }>("getMe", {});
+  return { bot: me.username, url };
 }

@@ -4,19 +4,20 @@ type Kind = "str" | "text" | "int" | "intn" | "bool" | "strs" | "date" | "code" 
 type Field = { k: Kind; values?: string[] };
 
 export const ENTITIES: Partial<Record<Table, Record<string, Field>>> = {
-  categories: { name: { k: "str" }, image: { k: "str" }, sort: { k: "int" }, active: { k: "bool" } },
+  categories: { name: { k: "str" }, name_ru: { k: "str" }, image: { k: "str" }, sort: { k: "int" }, active: { k: "bool" } },
   products: {
-    category_id: { k: "str" }, name: { k: "str" }, description: { k: "text" }, price: { k: "int" },
+    category_id: { k: "str" }, name: { k: "str" }, name_ru: { k: "str" }, description: { k: "text" }, description_ru: { k: "text" }, price: { k: "int" },
     old_price: { k: "intn" }, images: { k: "strs" }, is_promo: { k: "bool" }, is_new: { k: "bool" },
     in_stock: { k: "bool" }, sort: { k: "int" },
   },
   banners: {
-    title: { k: "str" }, subtitle: { k: "str" }, image: { k: "str" }, button_text: { k: "str" },
+    title: { k: "str" }, title_ru: { k: "str" }, subtitle: { k: "str" }, subtitle_ru: { k: "str" }, image: { k: "str" },
+    button_text: { k: "str" }, button_text_ru: { k: "str" },
     link_type: { k: "enum", values: ["none", "category", "product", "url"] }, link_value: { k: "str" },
     active: { k: "bool" }, sort: { k: "int" },
   },
   promos: {
-    code: { k: "code" }, title: { k: "str" }, type: { k: "enum", values: ["percent", "fixed"] },
+    code: { k: "code" }, title: { k: "str" }, title_ru: { k: "str" }, type: { k: "enum", values: ["percent", "fixed"] },
     value: { k: "int" }, min_total: { k: "int" }, max_uses: { k: "intn" }, expires_at: { k: "date" },
     active: { k: "bool" }, show_on_home: { k: "bool" },
   },

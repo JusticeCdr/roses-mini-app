@@ -31,7 +31,7 @@ describe("quote (server-side prices)", () => {
     const { quote } = await import("@/lib/data");
     const q = await quote([{ id: "p-7", qty: 1 }], "ROSES10");
     expect(q.discount).toBe(0);
-    expect(q.promoError).toMatch(/so‘mdan/);
+    expect(q.promoError).toMatch(/dan boshlab/);
   });
   it("clamps quantities", async () => {
     const { quote } = await import("@/lib/data");

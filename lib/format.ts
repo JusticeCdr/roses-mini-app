@@ -21,3 +21,7 @@ export function dateTime(iso?: string): string {
 export function unsplash(id: string, w = 800, h?: number): string {
   return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}${h ? `&h=${h}` : ""}&q=80`;
 }
+
+export function formatCard(n: string): string {
+  return n.replace(/\D/g, "").replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+}
